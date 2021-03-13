@@ -30,16 +30,25 @@ export const loadFileToAudioBuffer = async (
     reader.readAsArrayBuffer(file);
   });
 
+  const decoded = await ctx.decodeAudioData(rawBuffer);
+
+  const metadata = AudioMetadata.ogg(rawBuffer);
+  if (metadata === null) {
+    return {
+      buffer: decoded,
+      loopInfo: {},
+    };
+  }
+
   const comments: {
     loopstart?: string;
     looplength?: string;
-  } = AudioMetadata.ogg(rawBuffer);
+  } = metadata;
   const loopStart = comments.loopstart !== undefined ? parseInt(comments.loopstart) : undefined;
   const loopEnd =
     loopStart !== undefined && comments.looplength !== undefined
       ? loopStart + parseInt(comments.looplength)
       : undefined;
-  const decoded = await ctx.decodeAudioData(rawBuffer);
 
   return {
     buffer: decoded,

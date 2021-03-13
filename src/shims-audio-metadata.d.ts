@@ -1,6 +1,6 @@
-declare module "audio-metadata" {
+declare module 'audio-metadata' {
   const exports: {
-    ogg: (buffer: ArrayBuffer) => Record<string, string>;
+    ogg: (buffer: ArrayBuffer) => Record<string, string> | null;
   };
   export default exports;
 }
