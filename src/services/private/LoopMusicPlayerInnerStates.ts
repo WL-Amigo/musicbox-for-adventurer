@@ -1,4 +1,5 @@
 import { InvalidOperationError } from '../../errors/OperationError';
+import { FileWithMetadata } from '../../model/FileWithMetadata';
 import { LoopInfo } from '../../model/LoopInfo';
 import { loadFileToAudioBuffer, startPlayback, stopPlayback } from './MusicPlayerOperations';
 
@@ -7,7 +8,9 @@ export interface ILoopMusicPlayerInnerStates {
   readonly canPlay: boolean;
   readonly canPause: boolean;
   readonly canStop: boolean;
-  load(file: File): Promise<ILoopMusicPlayerInnerStates>;
+  readonly audioBuffer?: AudioBuffer;
+  readonly loopInfo?: LoopInfo;
+  load(file: FileWithMetadata): Promise<ILoopMusicPlayerInnerStates>;
   play(): Promise<ILoopMusicPlayerInnerStates>;
   pause(): Promise<ILoopMusicPlayerInnerStates>;
   stop(): Promise<ILoopMusicPlayerInnerStates>;
@@ -21,7 +24,7 @@ export class InitialState implements ILoopMusicPlayerInnerStates {
 
   public constructor(private readonly audioCtx: AudioContext) {}
 
-  public async load(file: File): Promise<ILoopMusicPlayerInnerStates> {
+  public async load(file: FileWithMetadata): Promise<ILoopMusicPlayerInnerStates> {
     const { buffer, loopInfo } = await loadFileToAudioBuffer(file, this.audioCtx);
     return new StoppedState(this.audioCtx, buffer, loopInfo);
   }
@@ -47,11 +50,11 @@ class StoppedState implements ILoopMusicPlayerInnerStates {
 
   public constructor(
     private readonly audioCtx: AudioContext,
-    private readonly audioBuffer: AudioBuffer,
-    private readonly loopInfo: LoopInfo,
+    public readonly audioBuffer: AudioBuffer,
+    public readonly loopInfo: LoopInfo,
   ) {}
 
-  public async load(file: File): Promise<ILoopMusicPlayerInnerStates> {
+  public async load(file: FileWithMetadata): Promise<ILoopMusicPlayerInnerStates> {
     const { buffer, loopInfo } = await loadFileToAudioBuffer(file, this.audioCtx);
     return new StoppedState(this.audioCtx, buffer, loopInfo);
   }
@@ -92,14 +95,14 @@ class PlayingState implements ILoopMusicPlayerInnerStates {
 
   public constructor(
     private readonly audioCtx: AudioContext,
-    private readonly audioBuffer: AudioBuffer,
-    private readonly loopInfo: LoopInfo,
+    public readonly audioBuffer: AudioBuffer,
+    public readonly loopInfo: LoopInfo,
     private readonly gainNode: GainNode,
     private readonly sourceNode: AudioBufferSourceNode,
     private readonly startTimestamp: number,
   ) {}
 
-  async load(file: File): Promise<ILoopMusicPlayerInnerStates> {
+  async load(file: FileWithMetadata): Promise<ILoopMusicPlayerInnerStates> {
     // stop playback
     const loadPromise = loadFileToAudioBuffer(file, this.audioCtx);
     await stopPlayback(this.audioCtx, this.gainNode, this.sourceNode, 500);
@@ -137,12 +140,12 @@ class PausedState implements ILoopMusicPlayerInnerStates {
 
   public constructor(
     private readonly audioCtx: AudioContext,
-    private readonly audioBuffer: AudioBuffer,
-    private readonly loopInfo: LoopInfo,
+    public readonly audioBuffer: AudioBuffer,
+    public readonly loopInfo: LoopInfo,
     private readonly resumeOffset: number,
   ) {}
 
-  public async load(file: File): Promise<ILoopMusicPlayerInnerStates> {
+  public async load(file: FileWithMetadata): Promise<ILoopMusicPlayerInnerStates> {
     const { buffer, loopInfo } = await loadFileToAudioBuffer(file, this.audioCtx);
     return new StoppedState(this.audioCtx, buffer, loopInfo);
   }
