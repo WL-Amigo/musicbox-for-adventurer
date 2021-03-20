@@ -3,19 +3,25 @@
   "version": "0.1.0",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "pnpm build:polyfill && vite build",
+    "build:polyfill": "esbuild --bundle --outfile=./public/polyfill.js --minify ./polyfills/polyfill.js",
     "serve": "vite preview",
     "preinstall": "npx only-allow pnpm",
     "prebuild": "test \"$CI\" = true && npx pnpm install --store=node_modules/.pnpm-store || echo skiping pnpm install"
   },
   "dependencies": {
     "audio-metadata": "^0.3.0",
-    "vue": "^3.0.5"
+    "buffer": "^6.0.3",
+    "konva": "^7.2.5",
+    "music-metadata-browser": "^2.2.6",
+    "vue": "^3.0.5",
+    "xxhash-wasm": "^0.4.1"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^1.1.4",
     "@vue/compiler-sfc": "^3.0.5",
     "autoprefixer": "^10.2.4",
+    "esbuild": "^0.9.5",
     "postcss": "^8.2.6",
     "tailwindcss": "^2.0.3",
     "typescript": "^4.1.3",
