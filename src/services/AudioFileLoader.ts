@@ -34,7 +34,6 @@ export class AudioFileLoader implements IAudioFileLoader {
     try {
       return await this.initPromise;
     } catch (error) {
-      console.error(error);
       throw new DependencySetupFailureError('AudioFileLoader', error);
     }
   }

@@ -7,7 +7,7 @@
 </template>
 
 <script lang="ts">
-import { defineAsyncComponent, defineComponent, ref } from 'vue';
+import { defineComponent } from 'vue';
 import Player from './components/Player.vue';
 import { Bootstrap } from './Bootstrap';
 

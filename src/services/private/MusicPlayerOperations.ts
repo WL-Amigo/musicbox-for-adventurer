@@ -1,7 +1,4 @@
-import { UnexpectedStateError } from '../../errors/FatalError';
-import { NotSupportedFileTypeError } from '../../errors/FileError';
 import { LoopInfo } from '../../model/LoopInfo';
-import AudioMetadata from 'audio-metadata';
 import { FileWithMetadata } from '../../model/FileWithMetadata';
 
 const waitFor = (ms: number) => new Promise((res) => setTimeout(res, ms));
