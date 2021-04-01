@@ -20,6 +20,7 @@ devDependencies:
   eslint-config-prettier: 8.1.0_eslint@7.22.0
   eslint-plugin-unused-imports: 1.1.0
   eslint-plugin-vue: 7.7.0_eslint@7.22.0
+  pnpm: 5.18.9
   postcss: 8.2.6
   prettier: 2.2.1
   tailwindcss: 2.0.3_759587f5361760629983e9fe457a3aed
@@ -1500,6 +1501,13 @@ packages:
       node: '>=8.6'
     resolution:
       integrity: sha512-q0M/9eZHzmr0AulXyPwNfZjtwZ/RBZlbN3K3CErVrk50T2ASYI7Bye0EvekFY3IP1Nt2DHu0re+V2ZHIpMkuWg==
+  /pnpm/5.18.9:
+    dev: true
+    engines:
+      node: '>=10.16'
+    hasBin: true
+    resolution:
+      integrity: sha512-TYIkMI/ydQkorwVe5CGTZQj0Bn1Cd7aEMYLV91AIAwqiwt7ItrHkBnwmORS49r6vpNtjYE+4M6/6O2w1tcnbaA==
   /postcss-functions/3.0.0:
     dependencies:
       glob: 7.1.6
@@ -2122,6 +2130,7 @@ specifiers:
   konva: ^7.2.5
   localforage: ^1.9.0
   music-metadata-browser: ^2.2.6
+  pnpm: ^5.18.9
   postcss: ^8.2.6
   prettier: ^2.2.1
   tailwindcss: ^2.0.3
