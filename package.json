@@ -6,6 +6,7 @@
     "build": "pnpm build:polyfill && vite build",
     "build:polyfill": "esbuild --bundle --outfile=./public/polyfill.js --minify ./polyfills/polyfill.js",
     "serve": "vite preview",
+    "lint": "eslint './src/**/*.{ts,vue}'",
     "lint:fix": "eslint './src/**/*.{ts,vue}' --fix && prettier --write './src/**/*.{ts,vue}'",
     "preinstall": "npx only-allow pnpm",
     "prebuild": "test \"$CI\" = true && npx pnpm install --store=node_modules/.pnpm-store || echo skiping pnpm install"
