@@ -8,20 +8,18 @@ export const loadFileToAudioBuffer = async (
   ctx: AudioContext,
 ): Promise<{
   buffer: AudioBuffer;
-  loopInfo: LoopInfo;
 }> => {
   const rawBuffer = await file.file.arrayBuffer();
   const decoded = await ctx.decodeAudioData(rawBuffer);
   return {
     buffer: decoded,
-    loopInfo: file.loopInfo,
   };
 };
 
 export const startPlayback = (
   ctx: AudioContext,
   buf: AudioBuffer,
-  loopInfo: LoopInfo,
+  loopInfo: LoopInfo | undefined,
   startOffset: number,
   fadeInMS = 0,
 ): {
@@ -35,7 +33,7 @@ export const startPlayback = (
   gainNode.gain.setValueAtTime(1, ctx.currentTime);
   source.connect(gainNode);
   gainNode.connect(ctx.destination);
-  if (loopInfo.loopStart !== undefined && loopInfo.loopEnd !== undefined) {
+  if (loopInfo !== undefined) {
     source.loopStart = loopInfo.loopStart / buf.sampleRate;
     source.loopEnd = loopInfo.loopEnd / buf.sampleRate;
   }

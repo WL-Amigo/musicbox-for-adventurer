@@ -1,11 +1,10 @@
 import { FileWithMetadata } from '../model/FileWithMetadata';
-import { LoopInfo } from '../model/LoopInfo';
 
 export interface ILoopMusicPlayer {
   load(file: FileWithMetadata): Promise<void>;
-  start(): void;
-  pause(): void;
-  stop(): void;
+  start(): Promise<void>;
+  pause(): Promise<void>;
+  stop(): Promise<void>;
   onStateChanged(handler: (state: PlayerState) => void): () => void;
 }
 
@@ -14,5 +13,5 @@ export interface PlayerState {
   readonly canPause: boolean;
   readonly canStop: boolean;
   readonly audioBuffer?: AudioBuffer;
-  readonly loopInfo?: LoopInfo;
+  readonly file?: FileWithMetadata;
 }

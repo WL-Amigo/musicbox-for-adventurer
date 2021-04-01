@@ -4,6 +4,7 @@ import type { parseBlob, IAudioMetadata } from 'music-metadata-browser';
 import { DependencySetupFailureError } from '../errors/FatalError';
 import { LoopInfo } from '../model/LoopInfo';
 import { NotSupportedFileTypeError } from '../errors/FileError';
+import { ILoopInfoDatabase, LoopInfoDBKey } from './ILoopInfoDatabase';
 
 interface AsyncDependencies {
   readonly parseMetadataFromBlob: typeof parseBlob;
@@ -14,7 +15,7 @@ export class AudioFileLoader implements IAudioFileLoader {
   private readonly initPromise: Promise<AsyncDependencies>;
   public readonly isAsyncInitService = true;
 
-  public constructor() {
+  public constructor(private readonly loopInfoDatabase: ILoopInfoDatabase) {
     this.initPromise = this.init();
   }
 
@@ -56,17 +57,25 @@ export class AudioFileLoader implements IAudioFileLoader {
     const metadata = await metadataPromise;
     const hash = await hashPromise;
 
-    return {
-      file,
-      loopInfo: this.parseLoopInfo(metadata.native),
+    const loopInfoDBKey: LoopInfoDBKey = {
       hash,
       title: metadata.common.title ?? '',
       album: metadata.common.album ?? '',
       trackNum: metadata.common.track.no ?? 0,
     };
+    let loopInfo = this.parseLoopInfo(metadata.native);
+    if (loopInfo === undefined) {
+      loopInfo = await this.loopInfoDatabase.getLoopInfo(loopInfoDBKey);
+    }
+
+    return {
+      file,
+      loopInfo,
+      ...loopInfoDBKey,
+    };
   }
 
-  public parseLoopInfo(nativeTags: IAudioMetadata['native']): LoopInfo {
+  public parseLoopInfo(nativeTags: IAudioMetadata['native']): LoopInfo | undefined {
     const tagsDict = new Map<string, string>(
       Object.values(nativeTags)
         .flat()
@@ -74,12 +83,12 @@ export class AudioFileLoader implements IAudioFileLoader {
     );
     const loopStart = Number(tagsDict.get('loopstart'));
     if (isNaN(loopStart)) {
-      return {};
+      return undefined;
     }
 
     const loopLength = Number(tagsDict.get('looplength'));
     if (isNaN(loopLength)) {
-      return {};
+      return undefined;
     }
 
     return {

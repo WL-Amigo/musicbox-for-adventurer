@@ -1,6 +1,8 @@
 import { InjectionKey, provide } from 'vue';
 import { ServiceKeys } from '../compositions/ServiceProvider';
 import { AudioFileLoader } from './AudioFileLoader';
+import { IAsyncInitService } from './IAsyncInitService';
+import { LoopInfoDatabase } from './LoopInfoDatabase';
 import { LoopMusicPlayer } from './LoopMusicPlayer';
 
 type ServiceDict = {
@@ -11,13 +13,19 @@ const AllServiceKeys = Object.keys(ServiceKeys) as (keyof typeof ServiceKeys)[];
 
 export const constructDependencies = async (): Promise<ServiceDict> => {
   const loopMusicPlayerInst = new LoopMusicPlayer();
-  const audioFileLoaderInst = new AudioFileLoader();
+  const keyValueStoreFactory = await import('./LocalForageKeyValueStore').then(
+    (m) => new m.LocalForageKeyValueStoreFactory(),
+  );
+  const loopInfoDatabaseInst = new LoopInfoDatabase(keyValueStoreFactory);
+  const audioFileLoaderInst = new AudioFileLoader(loopInfoDatabaseInst);
 
-  await Promise.all([audioFileLoaderInst].map((asyncInitService) => asyncInitService.ensureInitialized()));
+  const asyncInitServices: readonly IAsyncInitService[] = [audioFileLoaderInst];
+  await Promise.all(asyncInitServices.map((asyncInitService) => asyncInitService.ensureInitialized()));
 
   return {
     loopMusicPlayer: loopMusicPlayerInst,
     audioFileLoader: audioFileLoaderInst,
+    loopInfoDatabase: loopInfoDatabaseInst,
   };
 };
 
