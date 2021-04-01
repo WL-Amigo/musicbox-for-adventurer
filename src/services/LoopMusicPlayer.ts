@@ -1,4 +1,5 @@
 import { FeatureNotSupportedError } from '../errors/FatalError';
+import { FileWithMetadata } from '../model/FileWithMetadata';
 import { ILoopMusicPlayer, PlayerState } from './ILoopMusicPlayer';
 import { ILoopMusicPlayerInnerStates, InitialState } from './private/LoopMusicPlayerInnerStates';
 
@@ -23,7 +24,7 @@ export class LoopMusicPlayer implements ILoopMusicPlayer {
     }
   }
 
-  public async load(file: File): Promise<void> {
+  public async load(file: FileWithMetadata): Promise<void> {
     this.changeState(await this.state.load(file));
   }
 

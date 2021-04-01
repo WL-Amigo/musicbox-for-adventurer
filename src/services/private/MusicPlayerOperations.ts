@@ -1,68 +1,25 @@
-import { UnexpectedStateError } from '../../errors/FatalError';
-import { NotSupportedFileTypeError } from '../../errors/FileError';
 import { LoopInfo } from '../../model/LoopInfo';
-import AudioMetadata from 'audio-metadata';
+import { FileWithMetadata } from '../../model/FileWithMetadata';
 
 const waitFor = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
 export const loadFileToAudioBuffer = async (
-  file: File,
+  file: FileWithMetadata,
   ctx: AudioContext,
 ): Promise<{
   buffer: AudioBuffer;
-  loopInfo: LoopInfo;
 }> => {
-  if (!file.type.startsWith('audio')) {
-    throw new NotSupportedFileTypeError(file.type);
-  }
-
-  const rawBuffer = await new Promise<ArrayBuffer>((res, rej) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const result = e.target?.result;
-      if (!(result instanceof ArrayBuffer)) {
-        rej(new UnexpectedStateError('FileReader.target.result が ArrayBuffer ではありません'));
-        return;
-      }
-      res(result);
-      return;
-    };
-    reader.readAsArrayBuffer(file);
-  });
-
+  const rawBuffer = await file.file.arrayBuffer();
   const decoded = await ctx.decodeAudioData(rawBuffer);
-
-  const metadata = AudioMetadata.ogg(rawBuffer);
-  if (metadata === null) {
-    return {
-      buffer: decoded,
-      loopInfo: {},
-    };
-  }
-
-  const comments: {
-    loopstart?: string;
-    looplength?: string;
-  } = metadata;
-  const loopStart = comments.loopstart !== undefined ? parseInt(comments.loopstart) : undefined;
-  const loopEnd =
-    loopStart !== undefined && comments.looplength !== undefined
-      ? loopStart + parseInt(comments.looplength)
-      : undefined;
-
   return {
     buffer: decoded,
-    loopInfo: {
-      loopStart,
-      loopEnd,
-    },
   };
 };
 
 export const startPlayback = (
   ctx: AudioContext,
   buf: AudioBuffer,
-  loopInfo: LoopInfo,
+  loopInfo: LoopInfo | undefined,
   startOffset: number,
   fadeInMS = 0,
 ): {
@@ -76,7 +33,7 @@ export const startPlayback = (
   gainNode.gain.setValueAtTime(1, ctx.currentTime);
   source.connect(gainNode);
   gainNode.connect(ctx.destination);
-  if (loopInfo.loopStart !== undefined && loopInfo.loopEnd !== undefined) {
+  if (loopInfo !== undefined) {
     source.loopStart = loopInfo.loopStart / buf.sampleRate;
     source.loopEnd = loopInfo.loopEnd / buf.sampleRate;
   }

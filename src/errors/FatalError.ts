@@ -22,3 +22,9 @@ export class DependencyNotProvidedError extends BaseError {
     super(`次の依存関係が正しく provide されていません: ${injectionKey.description}`);
   }
 }
+
+export class DependencySetupFailureError extends BaseError {
+  public constructor(className: string, baseError: Error) {
+    super(`次のクラスのセットアップが失敗しました: ${className} => ${baseError}`);
+  }
+}

@@ -1,4 +1,4 @@
 export interface LoopInfo {
-  readonly loopStart?: number;
-  readonly loopEnd?: number;
+  readonly loopStart: number;
+  readonly loopEnd: number;
 }
