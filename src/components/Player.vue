@@ -29,6 +29,7 @@
           :current-loop-start="currentLoopInfo?.loopStart ?? 100000"
           :current-loop-end="currentLoopInfo?.loopEnd ?? currentAudioBuffer.length - 100000"
           @registered="onLoopInfoRegistered"
+          @cancel="isLoopToolOpened = false"
         />
       </template>
     </div>

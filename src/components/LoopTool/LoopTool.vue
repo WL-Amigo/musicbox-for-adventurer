@@ -6,6 +6,7 @@
       :current-loop-start="currentLoopStart"
       :current-loop-end="currentLoopEnd"
       @registered="$emit('registered', $event)"
+      @cancel="$emit('cancel')"
     />
   </modal-base>
 </template>
@@ -31,6 +32,7 @@ export default defineComponent({
   emits: {
     'update:open': null,
     registered: null,
+    cancel: null,
   },
   setup() {
     return {};

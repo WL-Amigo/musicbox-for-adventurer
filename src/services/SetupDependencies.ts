@@ -4,6 +4,7 @@ import { AudioFileLoader } from './AudioFileLoader';
 import { IAsyncInitService } from './IAsyncInitService';
 import { LoopInfoDatabase } from './LoopInfoDatabase';
 import { LoopMusicPlayer } from './LoopMusicPlayer';
+import { LoopPreviewPlayer } from './LoopPreviewPlayer';
 
 type ServiceDict = {
   readonly [key in keyof typeof ServiceKeys]: typeof ServiceKeys[key] extends InjectionKey<infer T> ? T : never;
@@ -13,6 +14,7 @@ const AllServiceKeys = Object.keys(ServiceKeys) as (keyof typeof ServiceKeys)[];
 
 export const constructDependencies = async (): Promise<ServiceDict> => {
   const loopMusicPlayerInst = new LoopMusicPlayer();
+  const loopPreviewPlayerInst = new LoopPreviewPlayer();
   const keyValueStoreFactory = await import('./LocalForageKeyValueStore').then(
     (m) => new m.LocalForageKeyValueStoreFactory(),
   );
@@ -24,6 +26,7 @@ export const constructDependencies = async (): Promise<ServiceDict> => {
 
   return {
     loopMusicPlayer: loopMusicPlayerInst,
+    loopPreviewPlayer: loopPreviewPlayerInst,
     audioFileLoader: audioFileLoaderInst,
     loopInfoDatabase: loopInfoDatabaseInst,
   };
