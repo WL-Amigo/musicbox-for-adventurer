@@ -3,9 +3,11 @@ import { DependencyNotProvidedError } from '../errors/FatalError';
 import type { IAudioFileLoader } from '../services/IAudioFileLoader';
 import type { ILoopInfoDatabase } from '../services/ILoopInfoDatabase';
 import type { ILoopMusicPlayer } from '../services/ILoopMusicPlayer';
+import type { ILoopPreviewPlayer } from '../services/ILoopPreviewPlayer';
 
 export const ServiceKeys = {
   loopMusicPlayer: Symbol('LoopMusicPlayer') as InjectionKey<ILoopMusicPlayer>,
+  loopPreviewPlayer: Symbol('LoopPreviewPlayer') as InjectionKey<ILoopPreviewPlayer>,
   audioFileLoader: Symbol('AudioFileLoader') as InjectionKey<IAudioFileLoader>,
   loopInfoDatabase: Symbol('LoopInfoDatabase') as InjectionKey<ILoopInfoDatabase>,
 } as const;
