@@ -16,11 +16,15 @@ export class LoopPreviewPlayer implements ILoopPreviewPlayer {
   }
 
   start(buf: AudioBuffer, loopInfo: LoopInfo, offsetSecFromEnd: number): void {
+    if (this.currentSourceNode !== null && this.currentGainNode !== null) {
+      this.stop();
+    }
+
     const { sourceNode, gainNode } = startPlayback(
       this.ctx,
       buf,
       loopInfo,
-      Math.max(0, loopInfo.loopEnd - offsetSecFromEnd * 1000),
+      Math.max(0, loopInfo.loopEnd / buf.sampleRate - offsetSecFromEnd),
     );
     this.currentSourceNode = sourceNode;
     this.currentGainNode = gainNode;
@@ -32,5 +36,7 @@ export class LoopPreviewPlayer implements ILoopPreviewPlayer {
     }
 
     stopPlayback(this.ctx, this.currentGainNode, this.currentSourceNode, 20);
+    this.currentSourceNode = null;
+    this.currentGainNode = null;
   }
 }
