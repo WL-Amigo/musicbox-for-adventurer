@@ -1,6 +1,5 @@
 import Konva from 'konva';
 import Chroma from 'chroma-js';
-import { makeBufferView } from './Common';
 import {
   computed,
   defineComponent,
@@ -18,26 +17,33 @@ import { makeRequiredCustomTypeProp, makeRequiredNumberProp } from '../../../../
 import { WaveformWidth, WholeWaveformHeight } from '../consts';
 import { lockDragBoundFunc } from '../../../../utils/konva/Drag';
 import { KonvaEventObject } from 'konva/types/Node';
+import { CalculateWholeWaveFormRequestMessage, CalculateWholeWaveFormResponseMessage } from './worker/MessageType';
+import CalculateWholeWaveFormWorker from './worker/calculateWholeWaveForm.worker?worker';
 
-const drawWaveform = (ctx: Konva.Context, audioBuffer: AudioBuffer, konvaShape: Konva.Shape): void => {
+type WholeWaveFormDrawData = CalculateWholeWaveFormResponseMessage;
+
+const drawWaveform = (
+  ctx: Konva.Context,
+  drawData: WholeWaveFormDrawData | undefined,
+  konvaShape: Konva.Shape,
+): void => {
+  if (drawData === undefined) {
+    return;
+  }
+
   const width = konvaShape.width();
   const height = konvaShape.height();
   const halfHeight = height / 2;
   const drawY = Math.round(height / 2);
-  const bufLength = audioBuffer.length;
-  const samplesPerPx = bufLength / width;
   const mainFillColor = konvaShape.fill() ?? 'black';
   const subFillColor = Chroma(mainFillColor).alpha(0.5).hex();
 
+  const { maxAmps, minAmps, rmsArray } = drawData;
+
   for (let x = 0; x < width; x++) {
-    const samplesFrom = Math.round(samplesPerPx * x);
-    const samplesTo = Math.round(samplesPerPx * (x + 1));
-    const samplesL = makeBufferView(audioBuffer.getChannelData(0), samplesFrom, samplesTo);
-    const samplesR = makeBufferView(audioBuffer.getChannelData(0), samplesFrom, samplesTo);
-    const samplesM = samplesL.map((l, i) => l + samplesR[i]);
-    const maxAmp = Math.max(...samplesM) / 2;
-    const minAmp = Math.min(...samplesM) / 2;
-    const rms = Math.sqrt(samplesM.reduce((pv, v) => pv + v * v, 0) / samplesM.length);
+    const maxAmp = maxAmps[x];
+    const minAmp = minAmps[x];
+    const rms = rmsArray[x];
 
     // 薄い色
     ctx.setAttr('fillStyle', subFillColor);
@@ -49,6 +55,23 @@ const drawWaveform = (ctx: Konva.Context, audioBuffer: AudioBuffer, konvaShape: 
 };
 
 const useWholeWaveformShape = (width: Ref<number>, height: Ref<number>, audioBuffer: AudioBuffer): Konva.Layer => {
+  const worker = new CalculateWholeWaveFormWorker();
+  const drawDataRef = ref<WholeWaveFormDrawData>();
+  onMounted(() => {
+    const samplesL = new Float32Array(audioBuffer.getChannelData(0));
+    const samplesR = new Float32Array(audioBuffer.getChannelData(1));
+    const msg: CalculateWholeWaveFormRequestMessage = {
+      samplesL,
+      samplesR,
+      width: width.value,
+    };
+    worker.onmessage = (e: MessageEvent<CalculateWholeWaveFormResponseMessage>) => {
+      drawDataRef.value = e.data;
+    };
+    worker.postMessage(msg, [samplesL.buffer, samplesR.buffer]);
+  });
+  onUnmounted(() => worker.terminate());
+
   const shape = new Konva.Shape({
     x: 0,
     y: 0,
@@ -57,7 +80,7 @@ const useWholeWaveformShape = (width: Ref<number>, height: Ref<number>, audioBuf
     opacity: 1,
     fill: 'black',
     sceneFunc: (ctx, shape) => {
-      drawWaveform(ctx, audioBuffer, shape);
+      drawWaveform(ctx, drawDataRef.value, shape);
     },
   });
   const layer = new Konva.Layer();
@@ -66,7 +89,7 @@ const useWholeWaveformShape = (width: Ref<number>, height: Ref<number>, audioBuf
   const redraw = () => {
     layer.batchDraw();
   };
-  watch([width, height], redraw);
+  watch([width, height, drawDataRef], redraw);
   redraw();
 
   return layer;
