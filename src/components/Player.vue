@@ -1,6 +1,6 @@
 <template>
   <div
-    class="rounded p-8 shadow-lg bg-white bg-opacity-80"
+    class="rounded p-8 shadow-lg bg-white bg-opacity-80 relative"
     @drop="onDrop"
     @dragenter="onDragEnterOrOver"
     @dragleave="onDragLeave"
@@ -26,13 +26,14 @@
           v-model:open="isLoopToolOpened"
           :file="currentFile"
           :audio-buffer="currentAudioBuffer"
-          :current-loop-start="currentLoopInfo?.loopStart ?? 100000"
-          :current-loop-end="currentLoopInfo?.loopEnd ?? currentAudioBuffer.length - 100000"
+          :current-loop-start="currentLoopInfo?.loopStart ?? 0"
+          :current-loop-end="currentLoopInfo?.loopEnd ?? currentAudioBuffer.length"
           @registered="onLoopInfoRegistered"
           @cancel="isLoopToolOpened = false"
         />
       </template>
     </div>
+    <loading :open="isLoading" message="読込中…" />
   </div>
 </template>
 
@@ -45,6 +46,8 @@ import PlayIcon from '../icons/boxicons/Play.vue';
 import StopIcon from '../icons/boxicons/Stop.vue';
 import PauseIcon from '../icons/boxicons/Pause.vue';
 import LoopTool from './LoopTool/LoopTool.vue';
+import { LoadingOverlay } from '../components/Loading';
+import { useLoadingState } from '../compositions/Loading';
 
 export default defineComponent({
   name: 'Player',
@@ -53,6 +56,7 @@ export default defineComponent({
     StopIcon,
     PauseIcon,
     LoopTool,
+    loading: LoadingOverlay,
   },
   setup() {
     const fileLoader = useService(ServiceKeys.audioFileLoader);
@@ -61,11 +65,14 @@ export default defineComponent({
     const currentState = shallowRef<PlayerState>();
     const unsubscribeStateChanged = player.onStateChanged((state) => (currentState.value = state));
     onUnmounted(() => unsubscribeStateChanged());
+    const { isLoading, load } = useLoadingState();
 
     const { onDragEnterOrOver, onDragLeave, onDrop } = useDragAndDropFileInput((fl) => {
-      fileLoader.load(fl[0]).then((file) => {
-        return player.load(file);
-      });
+      load(
+        fileLoader.load(fl[0]).then((file) => {
+          return player.load(file);
+        }),
+      );
     });
 
     const canPlay = computed(() => currentState.value?.canPlay ?? false);
@@ -118,10 +125,12 @@ export default defineComponent({
       if (loopInfo === undefined) {
         return;
       }
-      await player.load({
-        ...file,
-        loopInfo,
-      });
+      await load(
+        player.load({
+          ...file,
+          loopInfo,
+        }),
+      );
     };
     const onLoopInfoRegistered = async () => {
       closeLoopTool();
@@ -132,6 +141,7 @@ export default defineComponent({
       onDrop,
       onDragEnterOrOver,
       onDragLeave,
+      isLoading,
       canPlay,
       canStop,
       canPause,

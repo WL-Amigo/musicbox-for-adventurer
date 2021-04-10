@@ -16,11 +16,15 @@ import { defineAsyncComponent, defineComponent } from 'vue';
 import { FileWithMetadata } from '../../model/FileWithMetadata';
 import { makeRequiredBooleanProp, makeRequiredCustomTypeProp, makeRequiredNumberProp } from '../../utils/vue/Props';
 import ModalBase from '../ModalBase.vue';
+import { LoadingFixedSize } from '../Loading';
 
 export default defineComponent({
   components: {
     ModalBase,
-    mainComponent: defineAsyncComponent(() => import('./private/LoopTool.vue')),
+    mainComponent: defineAsyncComponent({
+      loader: () => import('./private/LoopTool.vue'),
+      loadingComponent: LoadingFixedSize,
+    }),
   },
   props: {
     open: makeRequiredBooleanProp(),
