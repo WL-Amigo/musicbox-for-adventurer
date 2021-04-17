@@ -19,32 +19,36 @@
         </button>
       </div>
     </div>
-    <div class="w-full h-auto flex flex-row justify-center">
+    <div class="w-full h-auto flex flex-row justify-center items-center space-x-2">
+      <button class="p-2 focus:outline-none" @click="onOpenFile">
+        <folder-open-icon class="w-8 h-8" />
+      </button>
       <button class="px-4 py-2 rounded bg-white" @click="onOpenLoopTool">ループツール</button>
-      <template v-if="currentAudioBuffer !== undefined && currentFile !== undefined">
-        <loop-tool
-          v-model:open="isLoopToolOpened"
-          :file="currentFile"
-          :audio-buffer="currentAudioBuffer"
-          :current-loop-start="currentLoopInfo?.loopStart ?? 0"
-          :current-loop-end="currentLoopInfo?.loopEnd ?? currentAudioBuffer.length"
-          @registered="onLoopInfoRegistered"
-          @cancel="isLoopToolOpened = false"
-        />
-      </template>
     </div>
+    <template v-if="currentAudioBuffer !== undefined && currentFile !== undefined">
+      <loop-tool
+        v-model:open="isLoopToolOpened"
+        :file="currentFile"
+        :audio-buffer="currentAudioBuffer"
+        :current-loop-start="currentLoopInfo?.loopStart ?? 0"
+        :current-loop-end="currentLoopInfo?.loopEnd ?? currentAudioBuffer.length"
+        @registered="onLoopInfoRegistered"
+        @cancel="isLoopToolOpened = false"
+      />
+    </template>
     <loading :open="isLoading" message="読込中…" />
   </div>
 </template>
 
 <script lang="ts">
 import { computed, defineComponent, onUnmounted, ref, shallowRef } from 'vue';
-import { useDragAndDropFileInput } from '../compositions/FileInput';
+import { useDragAndDropFileInput, useOpenFileDialog } from '../compositions/FileInput';
 import { ServiceKeys, useService } from '../compositions/ServiceProvider';
 import { PlayerState } from '../services/ILoopMusicPlayer';
 import PlayIcon from '../icons/boxicons/Play.vue';
 import StopIcon from '../icons/boxicons/Stop.vue';
 import PauseIcon from '../icons/boxicons/Pause.vue';
+import FolderOpenIcon from '../icons/boxicons/FolderOpen.vue';
 import LoopTool from './LoopTool/LoopTool.vue';
 import { LoadingOverlay } from '../components/Loading';
 import { useLoadingState } from '../compositions/Loading';
@@ -55,6 +59,7 @@ export default defineComponent({
     PlayIcon,
     StopIcon,
     PauseIcon,
+    FolderOpenIcon,
     LoopTool,
     loading: LoadingOverlay,
   },
@@ -67,13 +72,16 @@ export default defineComponent({
     onUnmounted(() => unsubscribeStateChanged());
     const { isLoading, load } = useLoadingState();
 
-    const { onDragEnterOrOver, onDragLeave, onDrop } = useDragAndDropFileInput((fl) => {
+    const loadFile = (file: File) => {
       load(
-        fileLoader.load(fl[0]).then((file) => {
-          return player.load(file);
+        fileLoader.load(file).then((fileWithMetadata) => {
+          return player.load(fileWithMetadata);
         }),
       );
-    });
+    };
+    const { onDragEnterOrOver, onDragLeave, onDrop } = useDragAndDropFileInput((fl) => loadFile(fl[0]));
+    const { openFileDialog } = useOpenFileDialog();
+    const onOpenFile = () => openFileDialog((fl) => loadFile(fl[0]));
 
     const canPlay = computed(() => currentState.value?.canPlay ?? false);
     const canStop = computed(() => currentState.value?.canStop ?? false);
@@ -141,6 +149,7 @@ export default defineComponent({
       onDrop,
       onDragEnterOrOver,
       onDragLeave,
+      onOpenFile,
       isLoading,
       canPlay,
       canStop,
