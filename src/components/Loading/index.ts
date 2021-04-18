@@ -23,6 +23,10 @@ export const LoadingFixedSize = defineComponent({
   props: LoadingProps,
   setup(props) {
     return () =>
-      h(CommonLoading, { message: props.message, open: props.open, class: 'w-32 h-32 bg-black bg-opacity-25 rounded' });
+      h(CommonLoading, {
+        message: props.message,
+        open: props.open,
+        class: 'w-auto min-w-32 px-2 h-32 bg-black bg-opacity-25 rounded',
+      });
   },
 });
