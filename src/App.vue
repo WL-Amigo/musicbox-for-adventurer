@@ -1,11 +1,11 @@
 <template>
-  <bootstrap>
-    <file-input-provider>
-      <div class="w-full h-full flex flex-row justify-center items-center bg-gray-800">
+  <div class="w-full h-full flex flex-row justify-center items-center">
+    <bootstrap>
+      <file-input-provider>
         <player />
-      </div>
-    </file-input-provider>
-  </bootstrap>
+      </file-input-provider>
+    </bootstrap>
+  </div>
 </template>
 
 <script lang="ts">

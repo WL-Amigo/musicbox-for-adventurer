@@ -24,6 +24,8 @@
         <folder-open-icon class="w-8 h-8" />
       </button>
       <button class="px-4 py-2 rounded bg-white" @click="onOpenLoopTool">ループツール</button>
+      <login-button />
+      <misc-menu />
     </div>
     <template v-if="currentAudioBuffer !== undefined && currentFile !== undefined">
       <loop-tool
@@ -50,6 +52,8 @@ import StopIcon from '../icons/boxicons/Stop.vue';
 import PauseIcon from '../icons/boxicons/Pause.vue';
 import FolderOpenIcon from '../icons/boxicons/FolderOpen.vue';
 import LoopTool from './LoopTool/LoopTool.vue';
+import LoginButton from './Auth/LoginButton.vue';
+import MiscMenu from './MiscMenu.vue';
 import { LoadingOverlay } from '../components/Loading';
 import { useLoadingState } from '../compositions/Loading';
 
@@ -61,6 +65,8 @@ export default defineComponent({
     PauseIcon,
     FolderOpenIcon,
     LoopTool,
+    LoginButton,
+    MiscMenu,
     loading: LoadingOverlay,
   },
   setup() {
