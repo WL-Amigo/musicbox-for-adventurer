@@ -38,7 +38,7 @@ export class LoopInfoDatabase implements ILoopInfoDatabase {
   }
 
   private async updateLoopInfo(currentDoc: LoopInfoDocument, newDoc: LoopInfoDocument) {
-    if (currentDoc.album === newDoc.album && currentDoc.track === newDoc.album) {
+    if (currentDoc.album === newDoc.album && currentDoc.track === newDoc.track) {
       await this.store.set(newDoc.hash, newDoc);
     } else {
       await this.store.set(newDoc.hash, [currentDoc, newDoc]);
@@ -46,9 +46,10 @@ export class LoopInfoDatabase implements ILoopInfoDatabase {
   }
 
   private async upsertLoopInfo(currentDocs: readonly LoopInfoDocument[], newDoc: LoopInfoDocument) {
-    const matchedDoc = currentDocs.findIndex((d) => d.album === newDoc.album && d.track === newDoc.track);
-    if (matchedDoc !== -1) {
-      const newValue = Array.from(currentDocs).splice(matchedDoc, 1, newDoc);
+    const matchedDocIndex = currentDocs.findIndex((d) => d.album === newDoc.album && d.track === newDoc.track);
+    if (matchedDocIndex !== -1) {
+      const newValue = Array.from(currentDocs);
+      newValue.splice(matchedDocIndex, 1, newDoc);
       await this.store.set(newDoc.hash, newValue);
     } else {
       await this.store.set(newDoc.hash, currentDocs.concat(newDoc));
@@ -60,6 +61,7 @@ interface LoopInfoDocument {
   readonly hash: string;
   readonly loopStart: number;
   readonly loopEnd: number;
+  readonly sampleRate: number;
   readonly album?: string;
   readonly track?: number;
 }
@@ -69,5 +71,6 @@ const castDocToLoopInfo = (doc: LoopInfoDocument | undefined): LoopInfo | undefi
     ? {
         loopStart: doc.loopStart,
         loopEnd: doc.loopEnd,
+        sampleRate: doc.sampleRate,
       }
     : undefined;

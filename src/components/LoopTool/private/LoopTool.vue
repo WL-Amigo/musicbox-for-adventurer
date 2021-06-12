@@ -59,6 +59,7 @@ const useLoopPreview = (
       {
         loopStart: currentLoopStartRef.value,
         loopEnd: currentLoopEndRef.value,
+        sampleRate: audioBufferRef.value.sampleRate,
       },
       offsetSecFromEnd,
     );
@@ -123,6 +124,7 @@ export default defineComponent({
       const newLoopInfo: LoopInfo = {
         loopStart: loopStartLocal.value,
         loopEnd: loopEndLocal.value,
+        sampleRate: props.audioBuffer.sampleRate,
       };
       await loopInfoDB.saveLoopInfo(props.file, newLoopInfo);
       ctx.emit('registered', newLoopInfo);

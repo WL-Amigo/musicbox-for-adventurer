@@ -34,8 +34,8 @@ export const startPlayback = (
   source.connect(gainNode);
   gainNode.connect(ctx.destination);
   if (loopInfo !== undefined) {
-    source.loopStart = loopInfo.loopStart / buf.sampleRate;
-    source.loopEnd = loopInfo.loopEnd / buf.sampleRate;
+    source.loopStart = loopInfo.loopStart / loopInfo.sampleRate;
+    source.loopEnd = loopInfo.loopEnd / loopInfo.sampleRate;
   }
   source.loop = true;
   source.start(ctx.currentTime, startOffset);
