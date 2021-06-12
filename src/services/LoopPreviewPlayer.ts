@@ -24,7 +24,7 @@ export class LoopPreviewPlayer implements ILoopPreviewPlayer {
       this.ctx,
       buf,
       loopInfo,
-      Math.max(0, loopInfo.loopEnd / buf.sampleRate - offsetSecFromEnd),
+      Math.max(0, loopInfo.loopEnd / loopInfo.sampleRate - offsetSecFromEnd),
     );
     this.currentSourceNode = sourceNode;
     this.currentGainNode = gainNode;

@@ -63,7 +63,7 @@ export class AudioFileLoader implements IAudioFileLoader {
       album: metadata.common.album ?? '',
       trackNum: metadata.common.track.no ?? 0,
     };
-    let loopInfo = this.parseLoopInfo(metadata.native);
+    let loopInfo = this.parseLoopInfo(metadata);
     if (loopInfo === undefined) {
       loopInfo = await this.loopInfoDatabase.getLoopInfo(loopInfoDBKey);
     }
@@ -75,7 +75,8 @@ export class AudioFileLoader implements IAudioFileLoader {
     };
   }
 
-  public parseLoopInfo(nativeTags: IAudioMetadata['native']): LoopInfo | undefined {
+  public parseLoopInfo(metadata: IAudioMetadata): LoopInfo | undefined {
+    const nativeTags = metadata.native;
     const tagsDict = new Map<string, string>(
       Object.values(nativeTags)
         .flat()
@@ -91,9 +92,14 @@ export class AudioFileLoader implements IAudioFileLoader {
       return undefined;
     }
 
+    if (metadata.format.sampleRate === undefined) {
+      return undefined;
+    }
+
     return {
       loopStart,
       loopEnd: loopStart + loopLength,
+      sampleRate: metadata.format.sampleRate,
     };
   }
 }
