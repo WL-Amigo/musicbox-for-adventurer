@@ -5,10 +5,10 @@ import { DependencySetupFailureError } from '../errors/FatalError';
 import { LoopInfo } from '../model/LoopInfo';
 import { NotSupportedFileTypeError } from '../errors/FileError';
 import { ILoopInfoDatabase, LoopInfoDBKey } from './ILoopInfoDatabase';
+import SparkMD5 from 'spark-md5';
 
 interface AsyncDependencies {
   readonly parseMetadataFromBlob: typeof parseBlob;
-  readonly hashUint8Array: (inputBuffer: Uint8Array) => Uint8Array;
 }
 
 export class AudioFileLoader implements IAudioFileLoader {
@@ -20,14 +20,10 @@ export class AudioFileLoader implements IAudioFileLoader {
   }
 
   private async init(): Promise<AsyncDependencies> {
-    const [musicMetadataBrowser, xxhashWasm] = await Promise.all([
-      import('music-metadata-browser'),
-      import('xxhash-wasm').then((p) => p.default()),
-    ]);
+    const [musicMetadataBrowser] = await Promise.all([import('music-metadata-browser')]);
 
     return {
       parseMetadataFromBlob: musicMetadataBrowser.parseBlob,
-      hashUint8Array: xxhashWasm.h64Raw,
     };
   }
 
@@ -40,7 +36,7 @@ export class AudioFileLoader implements IAudioFileLoader {
   }
 
   public async load(file: File): Promise<FileWithMetadata> {
-    const { parseMetadataFromBlob, hashUint8Array } = await this.ensureInitialized();
+    const { parseMetadataFromBlob } = await this.ensureInitialized();
 
     if (!file.type.startsWith('audio')) {
       throw new NotSupportedFileTypeError(file.type);
@@ -49,10 +45,7 @@ export class AudioFileLoader implements IAudioFileLoader {
     const metadataPromise = parseMetadataFromBlob(file);
     const fileBufferPromise = file.arrayBuffer();
     const hashPromise = fileBufferPromise.then((ab) => {
-      const raw = hashUint8Array(new Uint8Array(ab));
-      return Array.from(raw)
-        .map((v) => v.toString(16).padStart(2, '0'))
-        .join('');
+      return SparkMD5.ArrayBuffer.hash(ab);
     });
     const metadata = await metadataPromise;
     const hash = await hashPromise;
