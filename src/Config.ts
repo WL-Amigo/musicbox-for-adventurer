@@ -3,10 +3,10 @@ interface ApplicationConfig {
   readonly GoogleOAuthClientId: string | undefined;
 }
 
-const GAPIKey = import.meta.env.VITE_APP_GAPI_KEY;
-const GoogleOAuthClientId = import.meta.env.VITE_APP_GAPI_OAUTH_CLIENT_ID;
+const unwrapEnvString = (value: string | boolean | undefined): string | undefined =>
+  typeof value === 'string' ? value : undefined;
 
 export const AppConfig: ApplicationConfig = {
-  GAPIKey: typeof GAPIKey === 'string' ? GAPIKey : undefined,
-  GoogleOAuthClientId: typeof GoogleOAuthClientId === 'string' ? GoogleOAuthClientId : undefined,
+  GAPIKey: unwrapEnvString(import.meta.env.VITE_APP_GAPI_KEY),
+  GoogleOAuthClientId: unwrapEnvString(import.meta.env.VITE_APP_GAPI_OAUTH_CLIENT_ID),
 };

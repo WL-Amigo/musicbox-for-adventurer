@@ -1,5 +1,6 @@
 import { FileWithMetadata } from '../model/FileWithMetadata';
 import { LoopInfo } from '../model/LoopInfo';
+import { UnsubscribeHandler } from '../utils/Event';
 
 export type LoopInfoDBKey = Omit<FileWithMetadata, 'file' | 'loopInfo'>;
 
@@ -17,9 +18,12 @@ export interface LoopInfoDBExport {
   readonly loopInfoList: readonly (LoopInfoDocument | readonly LoopInfoDocument[])[];
 }
 
+export type LoopInfoUpdatedEventHandler = () => void;
+
 export interface ILoopInfoDatabase {
   getLoopInfo(file: LoopInfoDBKey): Promise<LoopInfo | undefined>;
   saveLoopInfo(file: LoopInfoDBKey, loopInfo: Required<LoopInfo>): Promise<void>;
   export(): Promise<LoopInfoDBExport>;
   import(loopInfoDBJsonStr: string): Promise<void>;
+  subscribeLoopInfoUpdated(handler: LoopInfoUpdatedEventHandler): UnsubscribeHandler;
 }

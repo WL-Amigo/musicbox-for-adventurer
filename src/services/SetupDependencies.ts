@@ -1,5 +1,7 @@
 import { InjectionKey, provide } from 'vue';
 import { ServiceKeys } from '../compositions/ServiceProvider';
+import { Logger } from '../Logger';
+import { AppDataSyncService } from './AppDataSyncService';
 import { AudioFileLoader } from './AudioFileLoader';
 import { AuthService } from './AuthService';
 import { IAsyncInitService } from './IAsyncInitService';
@@ -22,10 +24,12 @@ export const constructDependencies = async (): Promise<ServiceDict> => {
   );
   const loopInfoDatabaseInst = new LoopInfoDatabase(keyValueStoreFactory);
   const audioFileLoaderInst = new AudioFileLoader(loopInfoDatabaseInst);
+  const _appDataSyncServiceInst = new AppDataSyncService(authServiceInst, loopInfoDatabaseInst);
 
-  authServiceInst.subscribeStateChanged((state) => console.log(state));
+  authServiceInst.subscribeStateChanged((state) => Logger.info(state));
+  _appDataSyncServiceInst.subscribeSyncFinished(() => Logger.info('sync finished!'));
 
-  const asyncInitServices: readonly IAsyncInitService[] = [audioFileLoaderInst, authServiceInst];
+  const asyncInitServices: readonly IAsyncInitService[] = [audioFileLoaderInst, authServiceInst, loopInfoDatabaseInst];
   await Promise.all(asyncInitServices.map((asyncInitService) => asyncInitService.ensureInitialized()));
 
   return {

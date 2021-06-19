@@ -2,6 +2,10 @@ import { registerEventHandler, UnsubscribeHandler } from '../utils/Event';
 import { IAsyncInitService } from './IAsyncInitService';
 import { AuthState, IAuthService } from './IAuthService';
 import { AppConfig } from '../Config';
+import { Logger } from '../Logger';
+
+const GoogleAPIScopes = ['https://www.googleapis.com/auth/drive.appdata', 'https://www.googleapis.com/auth/drive.file'];
+const GoogleAPIDiscoveryDocs = ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'];
 
 export class AuthService implements IAuthService, IAsyncInitService {
   public readonly isAsyncInitService = true;
@@ -16,7 +20,7 @@ export class AuthService implements IAuthService, IAsyncInitService {
     const apiKey = AppConfig.GAPIKey;
     const oAuthClientId = AppConfig.GoogleOAuthClientId;
     if (apiKey === undefined || oAuthClientId === undefined) {
-      console.error('Google API の初期化に必要なデータが揃っていません');
+      Logger.error('Google API の初期化に必要なデータが揃っていません');
       return;
     }
 
@@ -25,13 +29,19 @@ export class AuthService implements IAuthService, IAsyncInitService {
       new Promise((res) => gapi.load('picker', res)),
     ]);
 
-    await gapi.client.init({
-      apiKey,
-      clientId: oAuthClientId,
-      scope: ['https://www.googleapis.com/auth/drive.appdata', 'https://www.googleapis.com/auth/drive.file'].join(' '),
-      discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
-    });
-    gapi.auth2.getAuthInstance().isSignedIn.listen((isSignedIn: boolean) => {
+    try {
+      await gapi.client.init({
+        apiKey,
+        clientId: oAuthClientId,
+        scope: GoogleAPIScopes.join(' '),
+        discoveryDocs: GoogleAPIDiscoveryDocs,
+      });
+    } catch (error) {
+      Logger.error(error);
+      return;
+    }
+
+    const onSignedIn = (isSignedIn: boolean) => {
       if (isSignedIn) {
         this.onAuthStateChanged({
           signedInWith: 'google',
@@ -39,14 +49,9 @@ export class AuthService implements IAuthService, IAsyncInitService {
           client: gapi.client,
         });
       }
-    });
-    if (gapi.auth2.getAuthInstance().isSignedIn.get()) {
-      this.onAuthStateChanged({
-        signedInWith: 'google',
-        accessToken: gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().access_token,
-        client: gapi.client,
-      });
-    }
+    };
+    gapi.auth2.getAuthInstance().isSignedIn.listen(onSignedIn);
+    onSignedIn(gapi.auth2.getAuthInstance().isSignedIn.get());
   }
 
   public async loginWithGoogle(): Promise<void> {
@@ -54,7 +59,8 @@ export class AuthService implements IAuthService, IAsyncInitService {
   }
 
   public subscribeStateChanged(listener: (state: AuthState) => void): UnsubscribeHandler {
-    return registerEventHandler(this.stateChangedListeners, listener, this.currentState);
+    listener(this.currentState);
+    return registerEventHandler(this.stateChangedListeners, listener);
   }
 
   private onAuthStateChanged(newState: AuthState): void {

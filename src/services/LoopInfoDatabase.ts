@@ -1,8 +1,16 @@
 import { LoopInfo } from '../model/LoopInfo';
-import { ILoopInfoDatabase, LoopInfoDBExport, LoopInfoDBKey, LoopInfoDocument } from './ILoopInfoDatabase';
+import {
+  ILoopInfoDatabase,
+  LoopInfoDBExport,
+  LoopInfoDBKey,
+  LoopInfoDocument,
+  LoopInfoUpdatedEventHandler,
+} from './ILoopInfoDatabase';
 import { IKeyValueStore, IKeyValueStoreFactory } from './IKeyValueStore';
 import { formatRFC3339 } from 'date-fns';
 import { InvalidFileFormatError } from '../errors/FileError';
+import { IAsyncInitService } from './IAsyncInitService';
+import { registerEventHandler, UnsubscribeHandler } from '../utils/Event';
 
 type DBMetaData = {
   updated: string;
@@ -12,7 +20,10 @@ const InitMetaData: DBMetaData = {
   updated: '2021-04-18T09:00:00+09:00',
 };
 
-export class LoopInfoDatabase implements ILoopInfoDatabase {
+export class LoopInfoDatabase implements ILoopInfoDatabase, IAsyncInitService {
+  public readonly isAsyncInitService = true;
+  private readonly loopInfoUpdatedListeners: LoopInfoUpdatedEventHandler[] = [];
+
   private readonly store: IKeyValueStore<LoopInfoDocument | readonly LoopInfoDocument[]>;
   private readonly metadataStore: IKeyValueStore<DBMetaData>;
   private currentMetadata: DBMetaData | null = null;
@@ -20,6 +31,10 @@ export class LoopInfoDatabase implements ILoopInfoDatabase {
   public constructor(kvsFactory: IKeyValueStoreFactory) {
     this.store = kvsFactory.create('LoopInfo');
     this.metadataStore = kvsFactory.create('LoopInfoDBMetaData');
+  }
+
+  public async ensureInitialized(): Promise<void> {
+    this.currentMetadata = await this.metadataStore.get(MetaDataKey);
   }
 
   private async updateMetaData(part: Partial<DBMetaData>): Promise<void> {
@@ -56,6 +71,7 @@ export class LoopInfoDatabase implements ILoopInfoDatabase {
     await this.updateMetaData({
       updated: formatRFC3339(new Date()),
     });
+    this.onLoopInfoUpdated();
   }
 
   private async saveLoopInfoDoc(doc: LoopInfoDocument): Promise<void> {
@@ -119,11 +135,19 @@ export class LoopInfoDatabase implements ILoopInfoDatabase {
 
   private parseJsonToLoopInfoDBExport(json: string): LoopInfoDBExport {
     const result = JSON.parse(json);
-    // TODO: more strict validation by library like ajv
+    // TODO: more strict validation by library like zod
     if (result.updated === undefined || result.loopInfoList === undefined) {
       throw new InvalidFileFormatError('LoopInfoDBExport');
     }
     return result;
+  }
+
+  public subscribeLoopInfoUpdated(handler: LoopInfoUpdatedEventHandler): UnsubscribeHandler {
+    return registerEventHandler(this.loopInfoUpdatedListeners, handler);
+  }
+
+  private onLoopInfoUpdated(): void {
+    this.loopInfoUpdatedListeners.forEach((handler) => handler());
   }
 }
 
