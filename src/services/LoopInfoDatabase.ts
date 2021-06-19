@@ -11,8 +11,9 @@ import { IKeyValueStore, IKeyValueStoreFactory } from './IKeyValueStore';
 import { formatRFC3339 } from 'date-fns';
 import { InvalidFileFormatError } from '../errors/FileError';
 import { IAsyncInitService } from './IAsyncInitService';
-import { registerEventHandler, UnsubscribeHandler } from '../utils/Event';
+import { UnsubscribeHandler } from '../utils/Event';
 import { Logger } from '../Logger';
+import { createNanoEvents } from 'nanoevents';
 
 type DBMetaData = {
   updated: string;
@@ -22,9 +23,13 @@ const InitMetaData: DBMetaData = {
   updated: '2021-04-18T09:00:00+09:00',
 };
 
+type LoopInfoDatabaseEvents = {
+  updated: LoopInfoUpdatedEventHandler;
+};
+
 export class LoopInfoDatabase implements ILoopInfoDatabase, IAsyncInitService {
   public readonly isAsyncInitService = true;
-  private readonly loopInfoUpdatedListeners: LoopInfoUpdatedEventHandler[] = [];
+  private readonly events = createNanoEvents<LoopInfoDatabaseEvents>();
 
   private readonly store: IKeyValueStore<LoopInfoDocument | LoopInfoDocument[]>;
   private readonly metadataStore: IKeyValueStore<DBMetaData>;
@@ -145,11 +150,11 @@ export class LoopInfoDatabase implements ILoopInfoDatabase, IAsyncInitService {
   }
 
   public subscribeLoopInfoUpdated(handler: LoopInfoUpdatedEventHandler): UnsubscribeHandler {
-    return registerEventHandler(this.loopInfoUpdatedListeners, handler);
+    return this.events.on('updated', handler);
   }
 
   private onLoopInfoUpdated(): void {
-    this.loopInfoUpdatedListeners.forEach((handler) => handler());
+    this.events.emit('updated');
   }
 }
 

@@ -1,15 +1,20 @@
-import { registerEventHandler, UnsubscribeHandler } from '../utils/Event';
+import { UnsubscribeHandler } from '../utils/Event';
 import { IAsyncInitService } from './IAsyncInitService';
 import { AuthState, IAuthService } from './IAuthService';
 import { AppConfig } from '../Config';
 import { Logger } from '../Logger';
+import { createNanoEvents } from 'nanoevents';
 
 const GoogleAPIScopes = ['https://www.googleapis.com/auth/drive.appdata', 'https://www.googleapis.com/auth/drive.file'];
 const GoogleAPIDiscoveryDocs = ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'];
 
+type AuthServiceEvents = {
+  stateChanged: (state: AuthState) => void;
+};
+
 export class AuthService implements IAuthService, IAsyncInitService {
   public readonly isAsyncInitService = true;
-  private readonly stateChangedListeners: ((state: AuthState) => void)[] = [];
+  private readonly events = createNanoEvents<AuthServiceEvents>();
   private currentState: AuthState = { signedInWith: null };
 
   public async ensureInitialized(): Promise<void> {
@@ -60,11 +65,11 @@ export class AuthService implements IAuthService, IAsyncInitService {
 
   public subscribeStateChanged(listener: (state: AuthState) => void): UnsubscribeHandler {
     listener(this.currentState);
-    return registerEventHandler(this.stateChangedListeners, listener);
+    return this.events.on('stateChanged', listener);
   }
 
   private onAuthStateChanged(newState: AuthState): void {
     this.currentState = newState;
-    this.stateChangedListeners.forEach((listener) => listener(newState));
+    this.events.emit('stateChanged', newState);
   }
 }

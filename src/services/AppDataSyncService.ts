@@ -1,12 +1,17 @@
-import { registerEventHandler, UnsubscribeHandler } from '../utils/Event';
+import { createNanoEvents } from 'nanoevents';
+import { UnsubscribeHandler } from '../utils/Event';
 import { IAppDataSyncService, SyncFinishedEventHandler } from './IAppDataSyncService';
 import { AuthState, IAuthService } from './IAuthService';
 import { ILoopInfoDatabase } from './ILoopInfoDatabase';
 import { GoogleAppDataSync } from './private/AppDataSyncService/GoogleAppDataSync';
 import { IAppDataSyncStrategy } from './private/AppDataSyncService/IAppDataSyncStrategy';
 
+interface AppDataSyncServiceEvents {
+  syncFinished: () => void;
+}
+
 export class AppDataSyncService implements IAppDataSyncService {
-  private readonly syncFinishedEventHandlers: SyncFinishedEventHandler[] = [];
+  private readonly events = createNanoEvents<AppDataSyncServiceEvents>();
   private currentStrategy: IAppDataSyncStrategy | null = null;
 
   public constructor(authService: IAuthService, private readonly loopInfoDatabase: ILoopInfoDatabase) {
@@ -51,10 +56,10 @@ export class AppDataSyncService implements IAppDataSyncService {
   }
 
   public subscribeSyncFinished(handler: SyncFinishedEventHandler): UnsubscribeHandler {
-    return registerEventHandler(this.syncFinishedEventHandlers, handler);
+    return this.events.on('syncFinished', handler);
   }
 
   private onSyncFinished(): void {
-    this.syncFinishedEventHandlers.forEach((handler) => handler());
+    this.events.emit('syncFinished');
   }
 }
