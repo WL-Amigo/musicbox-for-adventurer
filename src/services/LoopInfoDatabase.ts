@@ -1,7 +1,8 @@
-import { LoopInfo } from '../model/LoopInfo';
+import { LoopInfo, LoopInfoSchema } from '../model/LoopInfo';
 import {
   ILoopInfoDatabase,
   LoopInfoDBExport,
+  LoopInfoDBExportSchema,
   LoopInfoDBKey,
   LoopInfoDocument,
   LoopInfoUpdatedEventHandler,
@@ -11,6 +12,7 @@ import { formatRFC3339 } from 'date-fns';
 import { InvalidFileFormatError } from '../errors/FileError';
 import { IAsyncInitService } from './IAsyncInitService';
 import { registerEventHandler, UnsubscribeHandler } from '../utils/Event';
+import { Logger } from '../Logger';
 
 type DBMetaData = {
   updated: string;
@@ -24,7 +26,7 @@ export class LoopInfoDatabase implements ILoopInfoDatabase, IAsyncInitService {
   public readonly isAsyncInitService = true;
   private readonly loopInfoUpdatedListeners: LoopInfoUpdatedEventHandler[] = [];
 
-  private readonly store: IKeyValueStore<LoopInfoDocument | readonly LoopInfoDocument[]>;
+  private readonly store: IKeyValueStore<LoopInfoDocument | LoopInfoDocument[]>;
   private readonly metadataStore: IKeyValueStore<DBMetaData>;
   private currentMetadata: DBMetaData | null = null;
 
@@ -134,12 +136,12 @@ export class LoopInfoDatabase implements ILoopInfoDatabase, IAsyncInitService {
   }
 
   private parseJsonToLoopInfoDBExport(json: string): LoopInfoDBExport {
-    const result = JSON.parse(json);
-    // TODO: more strict validation by library like zod
-    if (result.updated === undefined || result.loopInfoList === undefined) {
+    try {
+      return LoopInfoDBExportSchema.parse(JSON.parse(json));
+    } catch (error) {
+      Logger.error(error);
       throw new InvalidFileFormatError('LoopInfoDBExport');
     }
-    return result;
   }
 
   public subscribeLoopInfoUpdated(handler: LoopInfoUpdatedEventHandler): UnsubscribeHandler {
@@ -152,10 +154,4 @@ export class LoopInfoDatabase implements ILoopInfoDatabase, IAsyncInitService {
 }
 
 const castDocToLoopInfo = (doc: LoopInfoDocument | undefined): LoopInfo | undefined =>
-  doc !== undefined
-    ? {
-        loopStart: doc.loopStart,
-        loopEnd: doc.loopEnd,
-        sampleRate: doc.sampleRate,
-      }
-    : undefined;
+  doc !== undefined ? LoopInfoSchema.parse(doc) : undefined;

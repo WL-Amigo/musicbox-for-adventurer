@@ -1,5 +1,6 @@
 import { ILoopInfoDatabase } from '../../ILoopInfoDatabase';
 import { IAppDataSyncStrategy } from './IAppDataSyncStrategy';
+import { z } from 'zod';
 
 const LoopInfoDBFileName = 'loopinfo-data.json';
 const CommonFileMetadata = {
@@ -31,16 +32,18 @@ export class GoogleAppDataSync implements IAppDataSyncStrategy {
 }
 
 const GDriveMetadataEndpoint = 'https://www.googleapis.com/drive/v3/files';
-type GDriveFileListResponse = {
-  readonly files: {
-    readonly id: string;
-    readonly name: string;
-  }[];
-};
-type GDriveFileMetadataResponse = {
-  readonly id: string;
-};
 const GDriveUploadEndpoint = 'https://www.googleapis.com/upload/drive/v3/files';
+const GDriveFileListResponseSchema = z.object({
+  files: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+    }),
+  ),
+});
+const GDriveFileMetadataResponseSchema = z.object({
+  id: z.string(),
+});
 
 const getAuthHeader = (oAuthToken: string) => {
   return {
@@ -58,7 +61,7 @@ const findFile = async (oAuthToken: string, fileName: string) => {
   const filesResponse = await fetch(filesRequestUrl.toString(), {
     headers: commonHeader,
   });
-  const files: GDriveFileListResponse = await filesResponse.json();
+  const files = GDriveFileListResponseSchema.parse(await filesResponse.json());
   return files.files.find((f) => f.name === fileName);
 };
 
@@ -75,7 +78,7 @@ const createEmptyJsonFile = async (oAuthToken: string, fileName: string): Promis
       ...CommonFileMetadata,
     }),
   });
-  const metadata: GDriveFileMetadataResponse = await fileCreateResponse.json();
+  const metadata = GDriveFileMetadataResponseSchema.parse(await fileCreateResponse.json());
   return metadata.id;
 };
 

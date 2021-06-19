@@ -1,22 +1,27 @@
+import { z } from 'zod';
 import { FileWithMetadata } from '../model/FileWithMetadata';
 import { LoopInfo } from '../model/LoopInfo';
 import { UnsubscribeHandler } from '../utils/Event';
 
 export type LoopInfoDBKey = Omit<FileWithMetadata, 'file' | 'loopInfo'>;
 
-export interface LoopInfoDocument {
-  readonly hash: string;
-  readonly loopStart: number;
-  readonly loopEnd: number;
-  readonly sampleRate: number;
-  readonly album?: string;
-  readonly track?: number;
-}
+export const LoopInfoDocumentSchema = z.object({
+  hash: z.string(),
+  loopStart: z.number(),
+  loopEnd: z.number(),
+  sampleRate: z.number(),
+  album: z.string().optional(),
+  track: z.number().optional(),
+});
 
-export interface LoopInfoDBExport {
-  readonly updated: string;
-  readonly loopInfoList: readonly (LoopInfoDocument | readonly LoopInfoDocument[])[];
-}
+export type LoopInfoDocument = z.infer<typeof LoopInfoDocumentSchema>;
+
+export const LoopInfoDBExportSchema = z.object({
+  updated: z.string(),
+  loopInfoList: z.union([LoopInfoDocumentSchema, z.array(LoopInfoDocumentSchema)]).array(),
+});
+
+export type LoopInfoDBExport = Readonly<z.infer<typeof LoopInfoDBExportSchema>>;
 
 export type LoopInfoUpdatedEventHandler = () => void;
 
