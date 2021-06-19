@@ -1,16 +1,28 @@
-import { defineAsyncComponent, defineComponent } from 'vue';
+import { defineAsyncComponent, defineComponent, h } from 'vue';
 import { constructDependencies, provideDependencies } from './services/SetupDependencies';
+import { LoadingFixedSize } from './components/Loading';
+import { Logger } from './Logger';
 
 export const Bootstrap = defineAsyncComponent({
   loader: async () => {
-    const deps = await constructDependencies();
+    try {
+      const deps = await constructDependencies();
+      return defineComponent({
+        setup(_, ctx) {
+          provideDependencies(deps);
 
-    return defineComponent({
-      setup(_, ctx) {
-        provideDependencies(deps);
+          return () => ctx.slots.default?.();
+        },
+      });
+    } catch (error) {
+      Logger.error(error);
+    }
 
-        return () => ctx.slots.default?.();
-      },
-    });
+    return defineComponent(() => () => h('div', { class: 'text-white' }, ['初期化に失敗しました']));
   },
+  loadingComponent: defineComponent({
+    setup() {
+      return () => h(LoadingFixedSize, { open: true, message: '冒険者のための音楽箱' });
+    },
+  }),
 });

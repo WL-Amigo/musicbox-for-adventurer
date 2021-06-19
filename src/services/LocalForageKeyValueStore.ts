@@ -11,8 +11,17 @@ class LocalForageKeyValueStore<ValueType> implements IKeyValueStore<ValueType> {
   public get(key: string): Promise<ValueType | null> {
     return this.store.getItem(key);
   }
+
   public async set(key: string, value: ValueType): Promise<void> {
     await this.store.setItem(key, value);
+  }
+
+  public async getAll(): Promise<ValueType[]> {
+    const result: ValueType[] = [];
+    await this.store.iterate((v: ValueType) => {
+      result.push(v);
+    });
+    return result;
   }
 }
 

@@ -5,3 +5,9 @@ export class NotSupportedFileTypeError extends BaseError {
     super(`サポートされていないファイルタイプです: ${inputedFileType}`);
   }
 }
+
+export class InvalidFileFormatError extends BaseError {
+  public constructor(typeName: string) {
+    super(`ファイル形式が期待されているフォーマットと異なります: ${typeName}`);
+  }
+}
