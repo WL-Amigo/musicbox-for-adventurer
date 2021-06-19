@@ -9,7 +9,7 @@ export const LoopInfoDocumentSchema = z.object({
   hash: z.string(),
   loopStart: z.number(),
   loopEnd: z.number(),
-  sampleRate: z.number(),
+  sampleRate: z.number().default(44100),
   album: z.string().optional(),
   track: z.number().optional(),
 });
