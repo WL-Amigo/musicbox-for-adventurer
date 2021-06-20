@@ -3,6 +3,7 @@ lockfileVersion: 5.3
 specifiers:
   '@headlessui/vue': ^1.0.0
   '@types/chroma-js': ^2.1.3
+  '@types/fs-extra': ^9.0.11
   '@types/spark-md5': ^3.0.2
   '@typescript-eslint/eslint-plugin': ^4.22.0
   '@typescript-eslint/parser': ^4.22.0
@@ -10,14 +11,17 @@ specifiers:
   '@vue/compiler-sfc': ^3.1.1
   '@vue/eslint-config-typescript': ^7.0.0
   audio-metadata: ^0.3.0
+  axios: ^0.21.1
   buffer: ^6.0.3
   chroma-js: ^2.1.2
   date-fns: ^2.21.1
+  dotenv: ^10.0.0
   esbuild: ^0.12.9
   eslint: ^7.24.0
   eslint-config-prettier: ^8.2.0
   eslint-plugin-unused-imports: ^1.1.1
   eslint-plugin-vue: ^7.9.0
+  fs-extra: ^10.0.0
   konva: ^7.2.5
   localforage: ^1.9.0
   music-metadata-browser: ^2.2.6
@@ -50,17 +54,21 @@ dependencies:
 
 devDependencies:
   '@types/chroma-js': 2.1.3
+  '@types/fs-extra': 9.0.11
   '@types/spark-md5': 3.0.2
   '@typescript-eslint/eslint-plugin': 4.22.0_ff099e9565393e1867438befa6bc639d
   '@typescript-eslint/parser': 4.22.0_eslint@7.24.0+typescript@4.3.4
   '@vitejs/plugin-vue': 1.2.3_@vue+compiler-sfc@3.1.1
   '@vue/compiler-sfc': 3.1.1_vue@3.1.1
   '@vue/eslint-config-typescript': 7.0.0_ee64617be77407c4b8b1b01946558b51
+  axios: 0.21.1
+  dotenv: 10.0.0
   esbuild: 0.12.9
   eslint: 7.24.0
   eslint-config-prettier: 8.2.0_eslint@7.24.0
   eslint-plugin-unused-imports: 1.1.1
   eslint-plugin-vue: 7.9.0_eslint@7.24.0
+  fs-extra: 10.0.0
   pnpm: 6.7.6
   prettier: 2.2.1
   typescript: 4.3.4
@@ -298,12 +306,22 @@ packages:
     resolution: {integrity: sha512-Q1y515GcOdTHgagaVFhHnIFQ38ygs/kmxdNpvpou+raI9UO3YZcHDngBSYKQklcKlvA7iuQlmIKbzvmxcOE9CQ==}
     dev: false
 
+  /@types/fs-extra/9.0.11:
+    resolution: {integrity: sha512-mZsifGG4QeQ7hlkhO56u7zt/ycBgGxSVsFI/6lGTU34VtwkiqrrSDgw0+ygs8kFGWcXnFQWMrzF2h7TtDFNixA==}
+    dependencies:
+      '@types/node': 15.12.4
+    dev: true
+
   /@types/json-schema/7.0.7:
     resolution: {integrity: sha512-cxWFQVseBm6O9Gbw1IWb8r6OS4OhSt3hPZLkFApLjM8TEXROBuQGLAH2i2gZpcXdLBIrpXuTDhH7Vbm1iXmNGA==}
     dev: true
 
   /@types/node/14.14.35:
     resolution: {integrity: sha512-Lt+wj8NVPx0zUmUwumiVXapmaLUcAk3yPuHCFVXras9k5VT9TdhJqKqGVUQCD60OTMCl0qxJ57OiTL0Mic3Iag==}
+
+  /@types/node/15.12.4:
+    resolution: {integrity: sha512-zrNj1+yqYF4WskCMOHwN+w9iuD12+dGm0rQ35HLl9/Ouuq52cEtd0CH9qMgrdNmi5ejC1/V7vKEXYubB+65DkA==}
+    dev: true
 
   /@types/readable-stream/2.3.9:
     resolution: {integrity: sha512-sqsgQqFT7HmQz/V5jH1O0fvQQnXAJO46Gg9LRO/JPfjmVmGUlcx831TZZO3Y3HtWhIkzf3kTsNT0Z0kzIhIvZw==}
@@ -720,6 +738,14 @@ packages:
     resolution: {integrity: sha1-fVVAMfDCRO4pYjGhpV4A/3iNbOs=}
     hasBin: true
     dev: false
+
+  /axios/0.21.1:
+    resolution: {integrity: sha512-dKQiRHxGD9PPRIUNIWvZhPTPpl1rf/OxTYKsqKUDjBwYylTvV7SjSHJb9ratfyzM6wCdLCOYLzs73qpg5c4iGA==}
+    dependencies:
+      follow-redirects: 1.14.1
+    transitivePeerDependencies:
+      - debug
+    dev: true
 
   /babel-walk/3.0.0-canary-5:
     resolution: {integrity: sha512-GAwkz0AihzY5bkwIY5QDR+LvsRQgB/B+1foMPvi0FZPMl5fjD7ICiznUiBdLYMH1QYe6vqu4gWYytZOccLouFw==}
@@ -1164,6 +1190,11 @@ packages:
       is-obj: 1.0.1
     dev: true
 
+  /dotenv/10.0.0:
+    resolution: {integrity: sha512-rlBi9d8jpv9Sf1klPjNfFAuWDjKLwTIJJ/VxtoTwIR6hnZxcEOQCZg2oIL3MWBYw5GpUDKOEnND7LXTbIpQ03Q==}
+    engines: {node: '>=10'}
+    dev: true
+
   /duplexer3/0.1.4:
     resolution: {integrity: sha1-7gHdHKwO08vH/b6jfcCo8c4ALOI=}
     dev: true
@@ -1510,9 +1541,28 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
+  /follow-redirects/1.14.1:
+    resolution: {integrity: sha512-HWqDgT7ZEkqRzBvc2s64vSZ/hfOceEol3ac/7tKwzuvEyWx3/4UegXh5oBOIotkGsObyk3xznnSRVADBgWSQVg==}
+    engines: {node: '>=4.0'}
+    peerDependencies:
+      debug: '*'
+    peerDependenciesMeta:
+      debug:
+        optional: true
+    dev: true
+
   /format/0.2.2:
     resolution: {integrity: sha1-1hcBB+nv3E7TDJ3DkBbflCtctYs=}
     engines: {node: '>=0.4.x'}
+    dev: true
+
+  /fs-extra/10.0.0:
+    resolution: {integrity: sha512-C5owb14u9eJwizKGdchcDUQeFtlSHHthBk8pbX9Vc1PFZrLombudjDnNns88aYslCyF6IY5SUw3Roz6xShcEIQ==}
+    engines: {node: '>=12'}
+    dependencies:
+      graceful-fs: 4.2.6
+      jsonfile: 6.1.0
+      universalify: 2.0.0
     dev: true
 
   /fs-extra/9.1.0:
