@@ -2,6 +2,17 @@ import { createApp } from 'vue';
 import App from './App.vue';
 import 'virtual:windi.css';
 
+// Fix viewport height for mobile devices (address bar affect viewport height)
+// https://css-tricks.com/the-trick-to-viewport-units-on-mobile/
+const viewportHeightFixStyle = document.createElement('style');
+document.head.appendChild(viewportHeightFixStyle);
+const onViewportHeightChange = () => {
+  const vh = window.innerHeight * 0.01;
+  viewportHeightFixStyle.innerHTML = `:root { --vh: ${vh}px }`;
+};
+window.addEventListener('resize', onViewportHeightChange);
+onViewportHeightChange();
+
 createApp(App).mount('#app');
 
 if (import.meta.env.DEV && window.global) {

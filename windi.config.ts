@@ -29,5 +29,8 @@ export default defineConfig({
       'border-image-source': "url('/images/window-sub-white.png')",
       'border-image-slice': '32 fill',
     },
+    'h-screen-dynamic': {
+      height: 'calc(var(--vh) * 100)',
+    },
   },
 });
