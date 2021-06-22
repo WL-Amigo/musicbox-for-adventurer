@@ -19,16 +19,13 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, PropType, ref, watch } from 'vue';
+import { computed, defineComponent, ref, watch } from 'vue';
 import { defineBooleanProp } from '../utils/vue/Props';
 import TooltipElement from './TooltipElement.vue';
 import { useMouseHoverState } from '../compositions/Mouse';
 
 export default defineComponent({
   props: {
-    buttonRef: {
-      type: Object as PropType<HTMLButtonElement>,
-    },
     disabled: defineBooleanProp(false),
     applyPadding: defineBooleanProp(true),
     bgColor: {

@@ -1,7 +1,7 @@
 <template>
   <button class="relative p-1">
     <div class="absolute inset-0" :class="bgCls" />
-    <div class="relative flex flex-row items-center space-x-1">
+    <div class="relative flex flex-row items-center space-x-2">
       <slot name="icon">
         <div class="w-6 h-6" />
       </slot>

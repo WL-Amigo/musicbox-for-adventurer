@@ -12,7 +12,7 @@
       </IconButton>
     </MenuButton>
     <teleport to="body">
-      <div ref="popperContentEl" v-show="isOpen" class="relative p-6 bg-white w-48">
+      <div ref="popperContentEl" v-show="isOpen" class="relative p-6 bg-white w-72">
         <div class="window-sub absolute inset-0" />
         <MenuItems static class="relative flex flex-col space-y-1 focus:outline-none">
           <MenuItem v-slot:default="{ active }">
@@ -20,7 +20,7 @@
               <template v-slot:icon>
                 <UploadLineIcon class="w-6 h-6" />
               </template>
-              <span>エクスポート</span>
+              <span>ループ設定をエクスポート</span>
             </IconMenuButton>
           </MenuItem>
           <MenuItem v-slot:default="{ active }">
@@ -28,8 +28,11 @@
               <template v-slot:icon>
                 <DownloadLineIcon class="w-6 h-6" />
               </template>
-              <span>インポート</span>
+              <span>ループ設定をインポート</span>
             </IconMenuButton>
+          </MenuItem>
+          <MenuItem v-slot:default="{ active }">
+            <LicenseMenuItem :active="active" />
           </MenuItem>
         </MenuItems>
       </div>
@@ -51,6 +54,7 @@ import MoreFill from '../icons/RemixIcon/MoreFill.vue';
 import { createPopper } from '@popperjs/core';
 import { onClickOutside } from '@vueuse/core';
 import { useMouseHoverState } from '../compositions/Mouse';
+import LicenseMenuItem from './License/LicenseMenuItem.vue';
 
 export default defineComponent({
   components: {
@@ -63,6 +67,7 @@ export default defineComponent({
     MoreFill,
     DownloadLineIcon,
     UploadLineIcon,
+    LicenseMenuItem,
   },
   setup() {
     const loopInfoDB = useService(ServiceKeys.loopInfoDatabase);

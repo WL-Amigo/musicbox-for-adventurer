@@ -1,7 +1,7 @@
 <template>
   <teleport to="body">
     <div
-      class="bg-black bg-opacity-25 absolute top-0 left-0 w-screen h-screen flex items-center justify-center"
+      class="bg-black bg-opacity-25 absolute top-0 left-0 w-screen h-screen-dynamic flex items-center justify-center"
       v-if="open"
       @click="$emit('clickAway')"
     >
