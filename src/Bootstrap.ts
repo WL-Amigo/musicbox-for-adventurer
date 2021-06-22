@@ -22,7 +22,10 @@ export const Bootstrap = defineAsyncComponent({
   },
   loadingComponent: defineComponent({
     setup() {
-      return () => h(LoadingFixedSize, { open: true, message: '冒険者のための音楽箱' });
+      return () =>
+        h('div', { class: 'w-full h-full flex justify-center items-center' }, [
+          h(LoadingFixedSize, { open: true, message: '冒険者のための音楽箱' }),
+        ]);
     },
   }),
 });

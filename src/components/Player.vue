@@ -1,44 +1,55 @@
 <template>
-  <div
-    class="rounded p-8 shadow-lg bg-white bg-opacity-80 relative"
-    @drop="onDrop"
-    @dragenter="onDragEnterOrOver"
-    @dragleave="onDragLeave"
-    @dragover="onDragEnterOrOver"
-  >
-    <div class="w-auto h-24">
-      <div class="flex flex-row items-center px-8">
-        <button class="p-4 focus:outline-none" :class="makeButtonStyles(canStop)" :disabled="!canStop" @click="stop">
-          <stop-icon class="w-12 h-12" />
-        </button>
-        <button class="p-4 focus:outline-none" :class="makeButtonStyles(canPause)" :disabled="!canPause" @click="pause">
-          <pause-icon class="w-12 h-12" />
-        </button>
-        <button class="p-4 focus:outline-none" :class="makeButtonStyles(canPlay)" :disabled="!canPlay" @click="play">
-          <play-icon class="w-12 h-12" />
-        </button>
+  <div class="w-full h-full flex flex-row items-end">
+    <div
+      class="relative w-full overflow-x-hidden overflow-y-visible"
+      @drop="onDrop"
+      @dragenter="onDragEnterOrOver"
+      @dragleave="onDragLeave"
+      @dragover="onDragEnterOrOver"
+    >
+      <div class="absolute inset-0 window-main" />
+      <div class="relative p-4 min-h-32 flex flex-col lg:flex-row lg:justify-between items-center overflow-y-visible">
+        <div class="flex flex-row items-center px-4 text-white">
+          <IconButtonGrow :disabled="!canStop" @click="stop">
+            <StopIcon class="w-12 h-12 m-4" />
+          </IconButtonGrow>
+          <IconButtonGrow :disabled="!canPause" @click="pause">
+            <PauseIcon class="w-12 h-12 m-4" />
+          </IconButtonGrow>
+          <IconButtonGrow :disabled="!canPlay" @click="play">
+            <PlayIcon class="w-12 h-12 m-4" />
+          </IconButtonGrow>
+        </div>
+        <div class="px-4 flex flex-row justify-center items-center space-x-2">
+          <IconButton class="text-white" @click="onOpenFile">
+            <FolderOpenIcon class="w-6 h-6 m-2" />
+            <template v-slot:tooltip>
+              <span>ファイルを開く</span>
+            </template>
+          </IconButton>
+          <IconButton class="text-white" @click="onOpenLoopTool" :disabled="currentFile === undefined">
+            <FindAndReplaceIcon class="w-6 h-6 m-2" />
+            <template v-slot:tooltip>
+              <span>ループツール</span>
+            </template>
+          </IconButton>
+          <LoginButton />
+          <MiscMenu />
+        </div>
       </div>
+      <template v-if="currentAudioBuffer !== undefined && currentFile !== undefined">
+        <LoopTool
+          v-model:open="isLoopToolOpened"
+          :file="currentFile"
+          :audio-buffer="currentAudioBuffer"
+          :current-loop-start="currentLoopInfo?.loopStart ?? 0"
+          :current-loop-end="currentLoopInfo?.loopEnd ?? currentAudioBuffer.length"
+          @registered="onLoopInfoRegistered"
+          @cancel="isLoopToolOpened = false"
+        />
+      </template>
     </div>
-    <div class="w-full h-auto flex flex-row justify-center items-center space-x-2">
-      <button class="p-2 focus:outline-none" @click="onOpenFile">
-        <folder-open-icon class="w-8 h-8" />
-      </button>
-      <button class="px-4 py-2 rounded bg-white" @click="onOpenLoopTool">ループツール</button>
-      <login-button />
-      <misc-menu />
-    </div>
-    <template v-if="currentAudioBuffer !== undefined && currentFile !== undefined">
-      <loop-tool
-        v-model:open="isLoopToolOpened"
-        :file="currentFile"
-        :audio-buffer="currentAudioBuffer"
-        :current-loop-start="currentLoopInfo?.loopStart ?? 0"
-        :current-loop-end="currentLoopInfo?.loopEnd ?? currentAudioBuffer.length"
-        @registered="onLoopInfoRegistered"
-        @cancel="isLoopToolOpened = false"
-      />
-    </template>
-    <loading :open="isLoading" message="読込中…" />
+    <Loading :open="isLoading" message="読込中…" />
   </div>
 </template>
 
@@ -51,9 +62,12 @@ import PlayIcon from '../icons/boxicons/Play.vue';
 import StopIcon from '../icons/boxicons/Stop.vue';
 import PauseIcon from '../icons/boxicons/Pause.vue';
 import FolderOpenIcon from '../icons/boxicons/FolderOpen.vue';
+import FindAndReplaceIcon from '../icons/RemixIcon/FindAndReplace.vue';
 import LoopTool from './LoopTool/LoopTool.vue';
 import LoginButton from './Auth/LoginButton.vue';
 import MiscMenu from './MiscMenu.vue';
+import IconButton from '../components/IconButton.vue';
+import IconButtonGrow from '../components/IconButtonGrow.vue';
 import { LoadingOverlay } from '../components/Loading';
 import { useLoadingState } from '../compositions/Loading';
 
@@ -67,7 +81,10 @@ export default defineComponent({
     LoopTool,
     LoginButton,
     MiscMenu,
-    loading: LoadingOverlay,
+    Loading: LoadingOverlay,
+    IconButton,
+    FindAndReplaceIcon,
+    IconButtonGrow,
   },
   setup() {
     const fileLoader = useService(ServiceKeys.audioFileLoader);
@@ -104,9 +121,6 @@ export default defineComponent({
       const state = currentState.value;
       return state?.file?.loopInfo;
     });
-    const makeButtonStyles = (enabled: boolean): string[] => {
-      return enabled ? [] : ['opacity-20', 'cursor-default'];
-    };
     const play = () => {
       if (canPlay.value) {
         player.start();
@@ -163,7 +177,6 @@ export default defineComponent({
       currentFile,
       currentAudioBuffer,
       currentLoopInfo,
-      makeButtonStyles,
       play,
       stop,
       pause,
