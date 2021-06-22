@@ -1,7 +1,13 @@
 <template>
   <HeadlessMenu as="div" class="relative text-left">
     <MenuButton as="template">
-      <IconButton class="text-white" v-model:buttonRef="popperAnchorEl" @click="isOpen = !isOpen">
+      <IconButton
+        class="text-white"
+        v-model:buttonRef="popperAnchorEl"
+        @click="isOpen = !isOpen"
+        @mouseenter="onMouseEnter"
+        @mouseleave="onMouseLeave"
+      >
         <MoreFill class="w-6 h-6 m-2" />
       </IconButton>
     </MenuButton>
@@ -43,7 +49,8 @@ import DownloadLineIcon from '../icons/RemixIcon/DownloadLine.vue';
 import UploadLineIcon from '../icons/RemixIcon/UploadLine.vue';
 import MoreFill from '../icons/RemixIcon/MoreFill.vue';
 import { createPopper } from '@popperjs/core';
-import { onClickOutside, useMouseInElement } from '@vueuse/core';
+import { onClickOutside } from '@vueuse/core';
+import { useMouseHoverState } from '../compositions/Mouse';
 
 export default defineComponent({
   components: {
@@ -100,11 +107,11 @@ export default defineComponent({
       });
       onInvalidate(() => popperInstance.destroy());
     });
-    const { isOutside: isOutsideOfAnchor } = useMouseInElement(popperAnchorEl);
+    const { isHover: isAnchorHovered, onMouseEnter, onMouseLeave } = useMouseHoverState();
     onClickOutside(
       popperContentEl,
       () => {
-        if (isOutsideOfAnchor.value) {
+        if (!isAnchorHovered.value) {
           isOpen.value = false;
         }
       },
@@ -118,6 +125,8 @@ export default defineComponent({
       isOpen,
       popperAnchorEl,
       popperContentEl,
+      onMouseEnter,
+      onMouseLeave,
     };
   },
 });

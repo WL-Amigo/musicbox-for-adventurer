@@ -1,12 +1,15 @@
 <template>
   <button
-    class="p-2 rounded relative focus:outline-none disabled:cursor-default"
+    class="rounded relative focus:outline-none disabled:cursor-default"
     :class="buttonCls"
     ref="buttonRefInner"
     :disabled="disabled"
+    @mouseenter="onMouseEnter"
+    @mouseleave="onMouseLeave"
   >
     <div
-      class="absolute inset-0 bg-white bg-opacity-0 group-hover:bg-opacity-20 transition-colors duration-200 group-hover:animate-pulse"
+      class="absolute inset-0 bg-opacity-0 group-hover:bg-opacity-20 transition-colors duration-200 group-hover:animate-pulse"
+      :class="bgCls"
     />
     <slot />
     <TooltipElement :open="isOpen" :anchorEl="buttonRefInner">
@@ -16,10 +19,10 @@
 </template>
 
 <script lang="ts">
-import { useMouseInElement } from '@vueuse/core';
 import { computed, defineComponent, PropType, ref, watch } from 'vue';
 import { defineBooleanProp } from '../utils/vue/Props';
 import TooltipElement from './TooltipElement.vue';
+import { useMouseHoverState } from '../compositions/Mouse';
 
 export default defineComponent({
   props: {
@@ -27,6 +30,10 @@ export default defineComponent({
       type: Object as PropType<HTMLButtonElement>,
     },
     disabled: defineBooleanProp(false),
+    applyPadding: defineBooleanProp(true),
+    bgColor: {
+      type: String,
+    },
   },
   emits: {
     'update:buttonRef': null,
@@ -38,18 +45,22 @@ export default defineComponent({
     });
 
     const tooltipElRef = ref<HTMLElement | null>(null);
-    const { isOutside } = useMouseInElement(buttonRefInner);
+    const { isHover, onMouseEnter, onMouseLeave } = useMouseHoverState();
     const isTooltipPresent = ctx.slots['tooltip'] !== undefined;
-    const isOpen = computed(() => buttonRefInner.value !== null && !isOutside.value && isTooltipPresent);
+    const isOpen = computed(() => buttonRefInner.value !== null && isHover.value && isTooltipPresent);
 
     const disabledCls = computed(() => (props.disabled ? ['opacity-20'] : ['group']));
-    const buttonCls = computed(() => disabledCls.value);
+    const buttonCls = computed(() => disabledCls.value.concat(props.applyPadding ? ['p-2'] : []));
+    const bgCls = computed(() => (props.bgColor !== undefined ? [props.bgColor] : ['bg-white']));
 
     return {
       buttonRefInner,
       buttonCls,
+      bgCls,
       tooltipElRef,
       isOpen,
+      onMouseEnter,
+      onMouseLeave,
     };
   },
   components: {
