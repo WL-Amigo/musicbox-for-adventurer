@@ -6,13 +6,24 @@
       </IconButton>
     </MenuButton>
     <teleport to="body">
-      <div ref="popperContentEl" v-show="isOpen" class="p-1 bg-white rounded min-w-32">
-        <MenuItems static class="flex flex-col space-y-1 focus:outline-none">
+      <div ref="popperContentEl" v-show="isOpen" class="relative p-6 bg-white w-48">
+        <div class="window-sub absolute inset-0" />
+        <MenuItems static class="relative flex flex-col space-y-1 focus:outline-none">
           <MenuItem v-slot:default="{ active }">
-            <button :class="calcMenuItemClass(active)" @click="doExport">エクスポート</button>
+            <IconMenuButton :active="active" @click="doExport">
+              <template v-slot:icon>
+                <UploadLineIcon class="w-6 h-6" />
+              </template>
+              <span>エクスポート</span>
+            </IconMenuButton>
           </MenuItem>
           <MenuItem v-slot:default="{ active }">
-            <button :class="calcMenuItemClass(active)" @click="doImport">インポート</button>
+            <IconMenuButton :active="active" @click="doImport">
+              <template v-slot:icon>
+                <DownloadLineIcon class="w-6 h-6" />
+              </template>
+              <span>インポート</span>
+            </IconMenuButton>
           </MenuItem>
         </MenuItems>
       </div>
@@ -27,9 +38,12 @@ import { ServiceKeys, useService } from '../compositions/ServiceProvider';
 import { downloadJson } from '../utils/FileDownload';
 import { useOpenFileDialog } from '../compositions/FileInput';
 import IconButton from './IconButton.vue';
+import IconMenuButton from './IconMenuButton.vue';
+import DownloadLineIcon from '../icons/RemixIcon/DownloadLine.vue';
+import UploadLineIcon from '../icons/RemixIcon/UploadLine.vue';
 import MoreFill from '../icons/RemixIcon/MoreFill.vue';
 import { createPopper } from '@popperjs/core';
-import { onClickOutside } from '@vueuse/core';
+import { onClickOutside, useMouseInElement } from '@vueuse/core';
 
 export default defineComponent({
   components: {
@@ -38,7 +52,10 @@ export default defineComponent({
     MenuItems,
     MenuItem,
     IconButton,
+    IconMenuButton,
     MoreFill,
+    DownloadLineIcon,
+    UploadLineIcon,
   },
   setup() {
     const loopInfoDB = useService(ServiceKeys.loopInfoDatabase);
@@ -83,7 +100,16 @@ export default defineComponent({
       });
       onInvalidate(() => popperInstance.destroy());
     });
-    onClickOutside(popperAnchorEl, () => (isOpen.value = false));
+    const { isOutside: isOutsideOfAnchor } = useMouseInElement(popperAnchorEl);
+    onClickOutside(
+      popperContentEl,
+      () => {
+        if (isOutsideOfAnchor.value) {
+          isOpen.value = false;
+        }
+      },
+      { event: 'pointerup' },
+    );
 
     return {
       calcMenuItemClass,

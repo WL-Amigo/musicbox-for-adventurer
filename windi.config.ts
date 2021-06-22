@@ -19,5 +19,15 @@ export default defineConfig({
       'border-image-source': "url('/images/window.png')",
       'border-image-slice': '64 fill',
     },
+    'window-sub': {
+      'border-width': '32px',
+      'border-image-source': "url('/images/window-sub.png')",
+      'border-image-slice': '32 fill',
+    },
+    'window-sub-white': {
+      'border-width': '32px',
+      'border-image-source': "url('/images/window-sub-white.png')",
+      'border-image-slice': '32 fill',
+    },
   },
 });
