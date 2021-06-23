@@ -1,44 +1,62 @@
 <template>
-  <div class="window-sub-white" @click.stop="">
-    <LoopTimingAdjuster
-      :audio-buffer="audioBuffer"
-      v-model:loop-start="loopStartLocal"
-      v-model:loop-end="loopEndLocal"
-      class="pb-2"
-    />
-    <div class="w-full flex flex-row justify-between items-center">
-      <div class="flex flex-row items-center space-x-2">
-        <div class="flex flex-row items-center space-x-1">
-          <IconButton :applyPadding="false" bgColor="bg-gray-500" @click="stopPreview">
-            <StopIcon class="w-8 h-8" />
-            <template v-slot:tooltip>
-              <span>プレビューを停止</span>
-            </template>
-          </IconButton>
-          <IconButton :applyPadding="false" bgColor="bg-gray-500" @click="playPreview(1)">
-            <Play1Icon class="w-8 h-8" />
-            <template v-slot:tooltip>
-              <span>ループ 1 秒前から再生</span>
-            </template>
-          </IconButton>
-          <IconButton :applyPadding="false" bgColor="bg-gray-500" @click="playPreview(3)">
-            <Play3Icon class="w-8 h-8" />
-            <template v-slot:tooltip>
-              <span>ループ 3 秒前から再生</span>
-            </template>
-          </IconButton>
-          <IconButton :applyPadding="false" bgColor="bg-gray-500" @click="playPreview(5)">
-            <Play5Icon class="w-8 h-8" />
-            <template v-slot:tooltip>
-              <span>ループ 5 秒前から再生</span>
-            </template>
-          </IconButton>
-          <div v-if="restTimeForLoopPoint > 0">ループ地点まであと {{ restTimeForLoopPoint.toFixed(3) }} 秒</div>
+  <div class="w-full h-full flex flex-col justify-center items-center">
+    <div class="window-sub-white" @click.stop="">
+      <LoopTimingAdjuster
+        :audio-buffer="audioBuffer"
+        v-model:loop-start="loopStartLocal"
+        v-model:loop-end="loopEndLocal"
+        class="pb-2"
+      />
+      <div class="w-full flex flex-row justify-between items-center">
+        <div class="flex flex-row items-center space-x-2">
+          <div class="flex flex-row items-center space-x-1">
+            <IconButton :applyPadding="false" bgColor="bg-gray-500" @click="stopPreview">
+              <StopIcon class="w-8 h-8" />
+              <template v-slot:tooltip>
+                <span>プレビューを停止</span>
+              </template>
+            </IconButton>
+            <IconButton :applyPadding="false" bgColor="bg-gray-500" @click="playPreview(1)">
+              <Play1Icon class="w-8 h-8" />
+              <template v-slot:tooltip>
+                <span>ループ 1 秒前から再生</span>
+              </template>
+            </IconButton>
+            <IconButton :applyPadding="false" bgColor="bg-gray-500" @click="playPreview(3)">
+              <Play3Icon class="w-8 h-8" />
+              <template v-slot:tooltip>
+                <span>ループ 3 秒前から再生</span>
+              </template>
+            </IconButton>
+            <IconButton :applyPadding="false" bgColor="bg-gray-500" @click="playPreview(5)">
+              <Play5Icon class="w-8 h-8" />
+              <template v-slot:tooltip>
+                <span>ループ 5 秒前から再生</span>
+              </template>
+            </IconButton>
+            <div v-if="restTimeForLoopPoint > 0">ループ地点まであと {{ restTimeForLoopPoint.toFixed(3) }} 秒</div>
+          </div>
+        </div>
+        <div class="flex flex-row items-center space-x-2">
+          <button class="py-2 px-8 bg-white hover:bg-gray-200" @click="onCancel">キャンセル</button>
+          <button class="py-2 px-8 bg-blue-800 text-white hover:bg-blue-600" @click="onRegister">登録</button>
         </div>
       </div>
-      <div class="flex flex-row items-center space-x-2">
-        <button class="py-2 px-8 bg-white hover:bg-gray-200" @click="onCancel">キャンセル</button>
-        <button class="py-2 px-8 bg-blue-800 text-white hover:bg-blue-600" @click="onRegister">登録</button>
+    </div>
+    <div class="p-1 text-white">
+      <div>
+        <span>本ツールは「吉里吉里ループツール」を再実装したものです。</span>
+      </div>
+      <div class="space-x-1">
+        <span>吉里吉里ループツールは</span>
+        <a
+          target="_blank"
+          rel="noopener noreferrer"
+          href="https://krkrz.github.io/"
+          class="underline hover:text-blue-200"
+          >吉里吉里Z</a
+        >
+        <span>にも同梱されています。</span>
       </div>
     </div>
   </div>
