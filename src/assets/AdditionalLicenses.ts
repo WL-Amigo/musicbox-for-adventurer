@@ -31,4 +31,10 @@ export const AdditionalLicenses: readonly LicenseItem[] = [
     url: 'https://remixicon.com/',
     category: 'asset',
   },
+  {
+    name: 'Epic Spinners',
+    license: 'MIT',
+    url: 'https://github.com/epicmaxco/epic-spinners',
+    category: 'dependency',
+  },
 ];
