@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full h-full flex flex-row justify-center items-center">
+  <div class="w-full h-full">
     <bootstrap>
       <file-input-provider>
         <player />
