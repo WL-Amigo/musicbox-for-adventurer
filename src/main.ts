@@ -1,6 +1,7 @@
 import { createApp } from 'vue';
 import App from './App.vue';
 import 'virtual:windi.css';
+import { registerSW } from 'virtual:pwa-register';
 
 // Fix viewport height for mobile devices (address bar affect viewport height)
 // https://css-tricks.com/the-trick-to-viewport-units-on-mobile/
@@ -12,6 +13,9 @@ const onViewportHeightChange = () => {
 };
 window.addEventListener('resize', onViewportHeightChange);
 onViewportHeightChange();
+
+// register service worker by vite-plugin-pwa
+registerSW();
 
 createApp(App).mount('#app');
 
