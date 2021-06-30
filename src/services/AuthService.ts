@@ -16,9 +16,27 @@ export class AuthService implements IAuthService, IAsyncInitService {
   public readonly isAsyncInitService = true;
   private readonly events = createNanoEvents<AuthServiceEvents>();
   private currentState: AuthState = { signedInWith: null };
+  private canLoginInternal = false;
+
+  public get canLogin(): boolean {
+    return this.canLoginInternal;
+  }
 
   public async ensureInitialized(): Promise<void> {
-    await this.initGoogle();
+    if (navigator.onLine) {
+      await this.initialize();
+    } else {
+      window.addEventListener('online', () => this.initialize(), { once: true });
+    }
+  }
+
+  private async initialize(): Promise<void> {
+    try {
+      await this.initGoogle();
+      this.canLoginInternal = true;
+    } catch (error) {
+      Logger.error(error);
+    }
   }
 
   private async initGoogle(): Promise<void> {
