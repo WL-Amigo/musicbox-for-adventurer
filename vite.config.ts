@@ -22,6 +22,7 @@ export default defineConfig(({ mode }) => {
           lang: 'ja',
           name: '冒険者のための音楽箱 - Musicbox for Adventurers -',
           short_name: '冒険者のための音楽箱',
+          display: 'fullscreen',
           background_color: '#1F2937',
           theme_color: '#1F2937',
           icons: [
@@ -43,6 +44,7 @@ export default defineConfig(({ mode }) => {
             },
           ],
         },
+        includeAssets: ['images/*.png'],
       }),
       html({
         inject: {
