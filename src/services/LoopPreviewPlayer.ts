@@ -1,6 +1,7 @@
 import { FeatureNotSupportedError } from '../errors/FatalError';
 import { LoopInfo } from '../model/LoopInfo';
 import { ILoopPreviewPlayer } from './ILoopPreviewPlayer';
+import { IPlayerSettingsService } from './IPlayerSettingsService';
 import { startPlayback, stopPlayback } from './private/MusicPlayerOperations';
 
 export class LoopPreviewPlayer implements ILoopPreviewPlayer {
@@ -8,7 +9,9 @@ export class LoopPreviewPlayer implements ILoopPreviewPlayer {
   private currentSourceNode: AudioBufferSourceNode | null = null;
   private currentGainNode: GainNode | null = null;
 
-  public constructor() {
+  public constructor(
+    private readonly playerSettingsService: IPlayerSettingsService,
+  ) {
     if (window.AudioContext === undefined) {
       throw new FeatureNotSupportedError('WebAudio API');
     }
@@ -25,6 +28,9 @@ export class LoopPreviewPlayer implements ILoopPreviewPlayer {
       buf,
       loopInfo,
       Math.max(0, loopInfo.loopEnd / loopInfo.sampleRate - offsetSecFromEnd),
+      {
+        initGain: this.playerSettingsService.getMasterVolumeCurveApplied(),
+      }
     );
     this.currentSourceNode = sourceNode;
     this.currentGainNode = gainNode;

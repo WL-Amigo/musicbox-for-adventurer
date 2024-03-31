@@ -21,16 +21,20 @@ export const startPlayback = (
   buf: AudioBuffer,
   loopInfo: LoopInfo | undefined,
   startOffset: number,
-  fadeInMS = 0,
+  options: {
+    fadeInMS?: number;
+    initGain: number;
+  },
 ): {
   gainNode: GainNode;
   sourceNode: AudioBufferSourceNode;
   pseudoPlayStartedTimestamp: number;
 } => {
+  const { fadeInMS = 0, initGain } = options;
   const source = ctx.createBufferSource();
   source.buffer = buf;
   const gainNode = ctx.createGain();
-  gainNode.gain.setValueAtTime(1, ctx.currentTime);
+  gainNode.gain.setValueAtTime(initGain, ctx.currentTime);
   source.connect(gainNode);
   gainNode.connect(ctx.destination);
   if (loopInfo !== undefined) {
@@ -43,7 +47,7 @@ export const startPlayback = (
   // fade in
   if (fadeInMS > 0) {
     gainNode.gain.setValueAtTime(0, ctx.currentTime);
-    gainNode.gain.linearRampToValueAtTime(1, ctx.currentTime + fadeInMS / 1000);
+    gainNode.gain.linearRampToValueAtTime(initGain, ctx.currentTime + fadeInMS / 1000);
   }
 
   return {
@@ -64,7 +68,8 @@ export const stopPlayback = async (
   const currentTimeStamp = Date.now();
 
   // fade-out
-  gainNode.gain.setValueAtTime(1, ctx.currentTime);
+  const currentGain = gainNode.gain.value;
+  gainNode.gain.setValueAtTime(currentGain, ctx.currentTime);
   gainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + fadeoutMSec / 1000);
   await waitFor(fadeoutMSec);
   sourceNode.stop();

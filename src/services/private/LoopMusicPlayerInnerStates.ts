@@ -10,9 +10,10 @@ export interface ILoopMusicPlayerInnerStates {
   readonly audioBuffer?: AudioBuffer;
   readonly file?: FileWithMetadata;
   load(file: FileWithMetadata): Promise<ILoopMusicPlayerInnerStates>;
-  play(): Promise<ILoopMusicPlayerInnerStates>;
+  play(gain: number): Promise<ILoopMusicPlayerInnerStates>;
   pause(): Promise<ILoopMusicPlayerInnerStates>;
   stop(): Promise<ILoopMusicPlayerInnerStates>;
+  changeVolume(gain: number): void;
 }
 
 export class InitialState implements ILoopMusicPlayerInnerStates {
@@ -39,6 +40,10 @@ export class InitialState implements ILoopMusicPlayerInnerStates {
   stop(): Promise<ILoopMusicPlayerInnerStates> {
     throw new InvalidOperationError('ファイルが読み込まれていません');
   }
+
+  changeVolume(): void {
+    // no-op
+  }
 }
 
 class StoppedState implements ILoopMusicPlayerInnerStates {
@@ -58,12 +63,15 @@ class StoppedState implements ILoopMusicPlayerInnerStates {
     return new StoppedState(this.audioCtx, buffer, file);
   }
 
-  public play(): Promise<ILoopMusicPlayerInnerStates> {
+  public play(gain: number): Promise<ILoopMusicPlayerInnerStates> {
     const { gainNode, sourceNode, pseudoPlayStartedTimestamp } = startPlayback(
       this.audioCtx,
       this.audioBuffer,
       this.file.loopInfo,
       0,
+      {
+        initGain: gain,
+      }
     );
     return Promise.resolve(
       new PlayingState(this.audioCtx, this.audioBuffer, this.file, gainNode, sourceNode, pseudoPlayStartedTimestamp),
@@ -76,6 +84,10 @@ class StoppedState implements ILoopMusicPlayerInnerStates {
 
   stop(): Promise<ILoopMusicPlayerInnerStates> {
     return Promise.resolve(this);
+  }
+
+  changeVolume(): void {
+    // no-op
   }
 }
 
@@ -122,6 +134,10 @@ class PlayingState implements ILoopMusicPlayerInnerStates {
     await stopPlayback(this.audioCtx, this.gainNode, this.sourceNode, 500);
     return new StoppedState(this.audioCtx, this.audioBuffer, this.file);
   }
+
+  changeVolume(gain: number): void {
+    this.gainNode.gain.value = gain;
+  }
 }
 
 class PausedState implements ILoopMusicPlayerInnerStates {
@@ -142,14 +158,17 @@ class PausedState implements ILoopMusicPlayerInnerStates {
     return new StoppedState(this.audioCtx, buffer, file);
   }
 
-  play(): Promise<ILoopMusicPlayerInnerStates> {
+  play(gain: number): Promise<ILoopMusicPlayerInnerStates> {
     // fade in
     const { gainNode, sourceNode, pseudoPlayStartedTimestamp } = startPlayback(
       this.audioCtx,
       this.audioBuffer,
       this.file.loopInfo,
       this.resumeOffset,
-      500,
+      {
+        fadeInMS: 500,
+        initGain: gain,
+      },
     );
     return Promise.resolve(
       new PlayingState(this.audioCtx, this.audioBuffer, this.file, gainNode, sourceNode, pseudoPlayStartedTimestamp),
@@ -162,5 +181,9 @@ class PausedState implements ILoopMusicPlayerInnerStates {
 
   stop(): Promise<ILoopMusicPlayerInnerStates> {
     return Promise.resolve(new StoppedState(this.audioCtx, this.audioBuffer, this.file));
+  }
+
+  changeVolume(): void {
+    // no-op
   }
 }
