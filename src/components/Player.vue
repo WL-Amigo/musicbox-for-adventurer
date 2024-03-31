@@ -8,7 +8,7 @@
       @dragover="onDragEnterOrOver"
     >
       <div class="absolute inset-0 window-main" />
-      <div class="relative p-4 min-h-32 flex flex-col lg:flex-row lg:justify-between items-center overflow-y-visible">
+      <div class="relative p-4 min-h-32 flex flex-col gap-y-3 lg:flex-row items-center overflow-y-visible">
         <div class="flex flex-row items-center px-4 text-white">
           <IconButtonGrow :disabled="!canStop" @click="stop">
             <StopIcon class="w-12 h-12 m-4" />
@@ -20,7 +20,9 @@
             <PlayIcon class="w-12 h-12 m-4" />
           </IconButtonGrow>
         </div>
-        <div class="px-4 flex flex-row justify-center items-center space-x-2">
+        <div class="flex-1 hidden lg:block"></div>
+        <MasterVolumeSlider />
+        <div class="pr-4 pl-4 lg:pl-12 flex flex-row justify-center items-center space-x-2">
           <IconButton class="text-white" @click="onOpenFile">
             <FolderOpenIcon class="w-6 h-6 m-2" />
             <template v-slot:tooltip>
@@ -68,6 +70,7 @@ import LoginButton from './Auth/LoginButton.vue';
 import MiscMenu from './MiscMenu.vue';
 import IconButton from '../components/IconButton.vue';
 import IconButtonGrow from '../components/IconButtonGrow.vue';
+import MasterVolumeSlider from './PlayerPartials/MasterVolume.vue';
 import { LoadingOverlay } from '../components/Loading';
 import { useLoadingState } from '../compositions/Loading';
 
@@ -85,6 +88,7 @@ export default defineComponent({
     IconButton,
     FindAndReplaceIcon,
     IconButtonGrow,
+    MasterVolumeSlider,
   },
   setup() {
     const fileLoader = useService(ServiceKeys.audioFileLoader);

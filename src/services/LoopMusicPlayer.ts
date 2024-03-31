@@ -1,6 +1,7 @@
 import { FeatureNotSupportedError } from '../errors/FatalError';
 import { FileWithMetadata } from '../model/FileWithMetadata';
 import { ILoopMusicPlayer, PlayerState } from './ILoopMusicPlayer';
+import { IPlayerSettingsService } from './IPlayerSettingsService';
 import { ILoopMusicPlayerInnerStates, InitialState } from './private/LoopMusicPlayerInnerStates';
 
 export class LoopMusicPlayer implements ILoopMusicPlayer {
@@ -8,12 +9,17 @@ export class LoopMusicPlayer implements ILoopMusicPlayer {
   private state: ILoopMusicPlayerInnerStates;
   private readonly stateChangedHandlers: ((s: PlayerState) => void)[] = [];
 
-  public constructor() {
+  public constructor(private readonly playerSettingsService: IPlayerSettingsService) {
     if (window.AudioContext === undefined) {
       throw new FeatureNotSupportedError('WebAudio API');
     }
     this.ctx = new window.AudioContext();
     this.state = new InitialState(this.ctx);
+
+    // listen master volume changed
+    this.playerSettingsService.listenMasterVolumeChanged((nextGain) => {
+      this.state.changeVolume(nextGain);
+    }, true);
   }
 
   private changeState(newState: ILoopMusicPlayerInnerStates): void {
@@ -29,7 +35,7 @@ export class LoopMusicPlayer implements ILoopMusicPlayer {
   }
 
   public async start(): Promise<void> {
-    this.changeState(await this.state.play());
+    this.changeState(await this.state.play(this.playerSettingsService.getMasterVolumeCurveApplied()));
   }
 
   public async pause(): Promise<void> {
