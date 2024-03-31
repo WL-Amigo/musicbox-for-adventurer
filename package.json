@@ -4,7 +4,7 @@
   "scripts": {
     "dev": "vite",
     "build": "pnpm build:polyfill && vue-tsc --noEmit && vite build",
-    "build:ci": "pnpm prebuild && pnpm prebuild:dl-assets && pnpm build:polyfill && vite build",
+    "build:ci": "pnpm prebuild:dl-assets && pnpm build:polyfill && vite build",
     "build:polyfill": "esbuild --bundle --outfile=./public/polyfill.js --minify ./polyfills/polyfill.js",
     "serve": "vite preview",
     "lint": "eslint './src/**/*.{ts,vue}'",
